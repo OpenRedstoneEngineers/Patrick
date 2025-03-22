@@ -3,3 +3,5 @@ venv/
 .env
 config.yaml
 commands.db
+Pipfile.lock
+Pipfile

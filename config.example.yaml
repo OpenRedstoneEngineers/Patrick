@@ -1,4 +1,27 @@
 channels:
   gamechat: 597852843785060357
-ingame_regex: "^`[A-Za-z]+` \*\*([A-Za-z0-9_\\]+)\*\*: *(.*)$"
-staff_role: 617848463438118922
+ingame_regex: '^`[A-Za-z]+` \*\*([A-Za-z0-9_\\]+)\*\*: *(.*)$'
+roles:
+  staff: 617848463438118922
+  admin: 117711708847472645
+logging_level: "WARN"
+greetings:
+  - "Welcome to ORE, @USER! Make sure to run `/discord` ingame and link your account to view the rest of DiscOREd!"
+  - "Oh hi, @USER! Run `/discord` ingame to link your account to view the rest of DiscOREd!"
+  - "Welcome, @USER! To see the rest of our DiscOREd, link your account by running `/discord` ingame!"
+insults:
+  - "once in the 4th grade %USER% got a 2% on their math quiz so everyone called them milk for the rest of the year"
+  - "%USER% may look like an idiot and talk like an idiot but don't let that fool you. %USER% really is an idiot."
+  - "%USER%, you warthog-faced buffoon."
+  - "%USER%, I fart in your general direction. Your mother was a hamster and your father smelt of elderberries."
+  - "%USER% has no enemies, but is intensely disliked by their friends."
+  - "%USER% is a cockalorum."
+  - "%USER% ........ pillock."
+  - "%USER% is more disappointing than an unsalted pretzel."
+  - "%USER% is the reason God created the middle finger."
+  - "I’ll never forget the first time I met %USER%. But I’ll keep trying."
+  - "Hold still. I’m trying to imagine %USER% with a personality."
+protips:
+  - "<:ore_seth:936109518029484052>"
+  - "for legal reasons, this is a joke"
+  - "if music was a woman id marry her"

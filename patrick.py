@@ -1,96 +1,176 @@
+import logging
 import re
-from os import getenv
+from os import getenv, listdir
 from pathlib import Path
 
 import discord
 import yaml
-from discord import Message
+from aiohttp import ClientSession
+from discord.ext import commands
 from dotenv import load_dotenv
-from loguru import logger
 
 import database
-from commands import BasicCommand, QuoteCommand, AddCommand, RemoveCommand, HelpCommand, DynamicHelpCommand, \
-    XkcdCommand, ApplyCommand
+from util import get_custom_commands, process_relay_chat, process_custom_command, is_admin
 
-load_dotenv(Path(__file__).parent / '.env')
-token = getenv('TOKEN')
-
+load_dotenv(Path(__file__).parent / ".env")
+TOKEN: str = getenv("TOKEN")
 
 def load_config():
-    with open(Path(__file__).parent / 'config.yaml', 'r') as source:
+    with open(Path(__file__).parent / "config.yaml", "r") as source:
         return yaml.safe_load(source)
 
+class PatrickHelp(commands.HelpCommand):
+    def __init__(self):
+        super().__init__()
 
-def main():
-    intents = discord.Intents.default()
-    intents.message_content = True
-    intents.members = True
+    async def get_commands_mapping(self) -> dict:
+        commands = await get_custom_commands(self.context.bot)
+        commands.update({command.name: command.signature for command in self.context.bot.commands})
+        return commands
 
-    client = discord.Client(intents=intents)
+    def format_table(self, mapping: dict) -> str:
+        maxlen_key = max(len(key) for key in mapping)
+        maxlen_value = max(len(value) for value in mapping.values())
+        text = "Available commands:\n"
+        text += f"|-{''.ljust(maxlen_key, '-')}-|-{''.ljust(maxlen_value, '-')}-|\n"
+        text += f"| {'Command:'.ljust(maxlen_key)} | {'Signature/response:'.ljust(maxlen_value)} |\n"
+        text += f"|-{''.ljust(maxlen_key, '-')}-|-{''.ljust(maxlen_value, '-')}-|\n"
+        text += "\n".join(
+            f"| {key.ljust(maxlen_key)} | {value.ljust(maxlen_value)} |" for key, value in mapping.items()
+        )
+        text += f"\n|-{''.ljust(maxlen_key, '-')}-|-{''.ljust(maxlen_value, '-')}-|"
+        return text
 
-    connector = database.Connector()
+    async def generate_link(self, content: str) -> str:
+        data = {"content": content, "title": "ORE Patrick", "expiry_days": 1}
+        async with self.context.bot.aiosession.post(
+            "https://dpaste.com/api/v2/", data=data
+        ) as response:
+            return response.headers["Location"]
 
-    config = load_config()
-    gamechat_regex = re.compile(config['ingame_regex'])
+    async def send_help_message(self, user: discord.User):
+        commands = await self.get_commands_mapping()
+        if len(commands) <= 7:
+            return await user.send(f"Available commands: {', '.join(commands.keys())}")
+        content = self.format_table(commands)
+        link = await self.generate_link(content)
+        return await user.send(
+            f"Available commands: {', '.join(list(commands.keys())[:7])} ...\nSnipped: <{link}>"
+        )
 
-    commands = [
-        BasicCommand("ping", [
-            "pong, I guess", "no, this is patrick", "*no, this is **patrick***", "# NO, THIS IS PATRICK"
-        ]),
-        ApplyCommand(),
-        QuoteCommand(),
-        XkcdCommand(),
-        RemoveCommand(connector),
-        DynamicHelpCommand(connector)
-    ]
+    async def send_bot_help(self, mapping):
+        user = self.context.author
+        await self.send_help_message(user)
 
-    commands.append(AddCommand(connector, [command.key for command in commands]))
-    commands.append(HelpCommand(commands))
+    async def send_command_help(self, command):
+        user = self.context.author
+        if len(command.signature) == 0:
+            await  user.send(f"Usage: `,{command.name}`")
+        else:
+            await user.send(f"Usage: `,{command.name} {command.signature}`")
 
-    def get_commands():
-        return commands + [BasicCommand(command[0], command[1]) for command in connector.get_commands()]
+class Patrick(commands.Bot):
+    def __init__(self, logger: logging.Logger, config: dict):
+        self.logger = logger
+        self.config = config
+        self.database = database.Connector()
+        self.relay_regex = re.compile(
+            self.config.get(
+                "ingame_regex", r"^`[A-Za-z]+` \*\*([A-Za-z0-9_\\]+)\*\*: *(.*)$"
+            )
+        )
+        activity = discord.Game("with Python")
 
-    @client.event
-    async def on_ready():
-        logger.info(f'Logged in as {client.user}')
+        intents = discord.Intents.default()
+        intents.message_content = True
+        intents.members = True
 
-    @client.event
-    async def on_message(message: Message):
-        if message.author == client.user:
+        super().__init__(
+            command_prefix=",",
+            case_insensitive=True,
+            intents=intents,
+            activity=activity,
+            help_command=PatrickHelp(),
+        )
+
+    async def on_message(self, message: discord.Message):
+        if message.author == self.user:
             return
-
-        author = message.author
-        content = message.content
-
-        can_admin = config['staff_role'] in {role.id for role in author.roles}
-
-        if message.channel.id == config['channels']['gamechat'] and author.bot:
-            match = gamechat_regex.match(content)
-            if not match:
+        found = False
+        if message.author.bot:
+            message, found = process_relay_chat(self, message)
+        if message.content.startswith(self.command_prefix):
+            if await process_custom_command(self, message):
                 return
-            can_admin = False
-            author, content = match.groups()
+        if not found:
+            await self.process_commands(message)
 
-        if content.startswith(","):
-            content = content.removeprefix(",")
+    async def on_ready(self):
+        self.logger.info("Connecting to database")
+        await self.database.connect()
+        self.aiosession = ClientSession()
+        await self.load_extensions()
+        self.logger.info(f"Logged in as {self.user}")
+
+    async def process_commands(self, message: discord.Message) -> None:
+        ctx = await self.get_context(message)
+        if ctx.command is not None:
+            self.logger.info(
+                f"User '{message.author}' ran command '{ctx.command.name}'"
+            )
+        await self.invoke(ctx)
+
+    async def load_extensions(self):
+        self.logger.info("Loading extensions")
+        status = {}
+        for extension in listdir("./cogs"):
+            if extension.endswith(".py"):
+                status[extension] = "X"
+        if len(status) == 0:
+            logger.info("No extensions found")
+            return
+        errors = []
+
+        for extension in status:
             try:
-                command = [command for command in get_commands() if content.split()[0] == command.key][0]
-            except IndexError:
-                logger.info(f"User '{author}' attempted to run an unrecognized command: '{content}'")
-                await message.reply("Unrecognized command :'(")
-                return
-            if command.is_admin and not can_admin:
-                await message.reply("Unauthorized :'(")
-                return
-            try:
-                logger.info(f"User '{author}' ran command '{content}'")
-                await command.execute(message)
-            except:  # This is a blanket catch but... yeah
-                logger.exception(f"User '{author}' encountered an error running command '{content}'")
-                await message.reply("Internal error :'(")
+                self.load_extension(f"cogs.{extension[:-3]}")
+                status[extension] = "L"
+            except Exception as e:
+                errors.append(e)
 
-    client.run(token)
+        maxlen = max(len(str(extension)) for extension in status)
+        for extension in status:
+            self.logger.info(f" {extension.ljust(maxlen)} | {status[extension]}")
+        (
+            self.logger.error(errors)
+            if errors
+            else self.logger.info("no errors during loading of extensions")
+        )
 
+    async def reload_extensions(self):
+        for extension in list(self.extensions):
+            self.logger.info(f"Reloading extension {extension}")
+            self.unload_extension(extension)
+        self.load_extensions()
 
-if __name__ == '__main__':
-    main()
+config = load_config()
+logging_level = config.get("logging_level", "").upper()
+if logging_level in ("DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"):
+    logging.basicConfig(level=logging.getLevelName(logging_level))
+else:
+    print("Invalid logging level in config.yaml, defaulting to INFO")
+    logging.basicConfig(level=logging.INFO)
+logger: logging.Logger = logging.getLogger("patrick")
+logging.basicConfig(level=logging.INFO)
+patrick: Patrick = Patrick(logger, config)
+
+@patrick.command()
+@is_admin()
+async def reload(ctx):
+    m: discord.Message = await ctx.send("Reloading extensions...")
+    await patrick.reload_extensions()
+    await m.edit(content="Reloaded extensions")
+    await m.delete(delay=5)
+    await ctx.message.delete(delay=5)
+
+patrick.run(TOKEN)
