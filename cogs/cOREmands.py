@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from util import is_staff
+from util import is_staff, app_is_staff
 
 
 class COREmands(commands.Cog):
@@ -73,7 +73,7 @@ class COREmands(commands.Cog):
                 f"Message deleted by {interaction.user.mention}: \"{self.reason}\""
             )
 
-    @is_staff()
+    @app_is_staff()
     async def delete_message(self, interaction: discord.Interaction, message: discord.Message):
         await interaction.response.send_modal(
             self.DeleteModal(message)
