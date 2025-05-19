@@ -1,13 +1,16 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 import aiosqlite
-from datetime import datetime, timezone
+
 
 def convert_datetime(val):
     """Convert ISO 8601 datetime to datetime.datetime object."""
     return datetime.fromisoformat(val.decode())
 
+
 aiosqlite.register_converter("datetime", convert_datetime)
+
 
 class Connector:
     def __init__(self):
@@ -182,7 +185,9 @@ class Connector:
             name (str): The name of the timer
         """
         async with self.connection.cursor() as cur:
-            query = "DELETE FROM timers WHERE user_id = ? AND name = ? RETURNING timestamp"
+            query = (
+                "DELETE FROM timers WHERE user_id = ? AND name = ? RETURNING timestamp"
+            )
             await cur.execute(query, (user_id, name))
             rows = await cur.fetchall()
             await self.connection.commit()

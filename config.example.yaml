@@ -32,6 +32,7 @@ automod_regexes:
   - "^test(ing)?$"
   - "f[0o]+"
 logging_level: "WARN"
+logging_file: "latest.log"
 greetings:
   - "Welcome to ORE, {user}! Make sure to run `/discord` ingame and link your account to view the rest of DiscOREd!"
   - "Oh hi, {user}! Run `/discord` ingame to link your account to view the rest of DiscOREd!"

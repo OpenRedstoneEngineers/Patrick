@@ -1,15 +1,22 @@
-import discord
-from discord.ext import commands
 from datetime import datetime, timezone
 
+import discord
+from discord.ext import commands
+
 from util import is_discord_member
+
 
 def pretty_timedelta(delta):
     """Convert a timedelta to a human-readable string."""
     days, seconds = delta.days, delta.seconds
     hours, seconds = divmod(seconds, 3600)
     minutes, seconds = divmod(seconds, 60)
-    return f"{days}d {hours}h {minutes}m {seconds}s" if days else f"{hours}h {minutes}m {seconds}s"
+    return (
+        f"{days}d {hours}h {minutes}m {seconds}s"
+        if days
+        else f"{hours}h {minutes}m {seconds}s"
+    )
+
 
 class Timers(commands.Cog):
     def __init__(self, bot):
@@ -35,9 +42,13 @@ class Timers(commands.Cog):
         rows = await self.bot.database.stop_timer(ctx.author.id, name)
         if rows:
             row = rows[0]
-            await ctx.send(f"{ctx.author.display_name}: Timer '{name}' stopped. Took {pretty_timedelta(datetime.now(timezone.utc) - row[0])}")
+            await ctx.send(
+                f"{ctx.author.display_name}: Timer '{name}' stopped. Took {pretty_timedelta(datetime.now(timezone.utc) - row[0])}"
+            )
         else:
-            await ctx.send(f"{ctx.author.display_name}: No timer found with the name '{name}'.")
+            await ctx.send(
+                f"{ctx.author.display_name}: No timer found with the name '{name}'."
+            )
 
     @timer.command(name="list")
     @is_discord_member()
@@ -46,13 +57,18 @@ class Timers(commands.Cog):
             member = ctx.author
         rows = await self.bot.database.get_timers(member.id)
         if rows:
-            timers = "\n".join([f"{row[0]}: <t:{int(row[1].timestamp())}:f>" for row in rows])
+            timers = "\n".join(
+                [f"{row[0]}: <t:{int(row[1].timestamp())}:f>" for row in rows]
+            )
             if member == ctx.author:
                 await ctx.send(f"{ctx.author.display_name}: Your timers:\n{timers}")
             else:
-                await ctx.send(f"{ctx.author.display_name}: {member.display_name}'s timers:\n{timers}")
+                await ctx.send(
+                    f"{ctx.author.display_name}: {member.display_name}'s timers:\n{timers}"
+                )
         else:
             await ctx.send(f"{ctx.author.display_name}: No timers found.")
+
 
 async def setup(bot):
     await bot.add_cog(Timers(bot))
