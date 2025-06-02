@@ -10,6 +10,9 @@ from discord.ext import commands
 from fractal import fractal
 from util import is_admin, is_staff
 
+import openai
+openai.api_key = "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"
+
 
 class RandCommands(commands.Cog):
     def __init__(self, bot):
@@ -23,6 +26,30 @@ class RandCommands(commands.Cog):
         await message.edit(
             content=f"Pong!\nLatency: {latency:.2f}ms\nAPI Latency: {self.bot.latency * 1000:.2f}ms"
         )
+
+    @commands.command(help="Consult the ancient wisdom of a cranky AI-powered Iron Golem about your redstone woes.")
+    async def golem(self, ctx, *, question: str):
+        if len(question) > 256:
+            return await ctx.send("Question is too long. Maximum length is 256 characters.")
+        if len(question) < 1:
+            return await ctx.send("Question is too short.")
+        
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a cranky AI-powered Iron Golem who is an expert in redstone. You answer questions about redstone with sarcasm and wit.",
+                    },
+                    {"role": "user", "content": question},
+                ],
+            )
+            answer = response.choices[0].message.content
+            return await ctx.send(answer)
+
+        except Exception as e:
+            return await ctx.send("An error occurred while processing your request. Likely fan forgot to pay his bill.")
 
     @commands.command(help="Gets a random quote from zenquotes.")
     async def quote(self, ctx):
