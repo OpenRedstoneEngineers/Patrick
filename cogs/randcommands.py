@@ -1,6 +1,7 @@
 import asyncio
 from asyncio import to_thread
 from io import BytesIO
+from os import getenv
 from random import choice, getrandbits, randint
 from time import perf_counter
 
@@ -11,7 +12,7 @@ from fractal import fractal
 from util import is_admin, is_staff
 
 import openai
-openai.api_key = "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"
+openai.api_key = getenv("OPENAI_API_KEY")
 
 
 class RandCommands(commands.Cog):
