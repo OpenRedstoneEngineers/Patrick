@@ -83,9 +83,7 @@ class PatrickHelp(commands.HelpCommand):
             return text
 
         custom_commands_split = split_list(list(custom_commands_mapping.keys()), 3)
-        print(custom_commands_mapping)
-        print(custom_commands_split)
-        maxlens = [max(len(key) for key in column) for column in custom_commands_split]
+        maxlens = [max((len(key) for key in column), default=5) for column in custom_commands_split]
 
         text += "\n\nCustom commands:\n"
         text += f"|-{''.ljust(maxlens[0], '-')}-|-{''.ljust(maxlens[1], '-')}-|-{''.ljust(maxlens[2], '-')}-|\n"
@@ -103,11 +101,14 @@ class PatrickHelp(commands.HelpCommand):
         Returns:
             str: The link to the uploaded content.
         """
-        data = {"content": content, "title": "ORE Patrick", "expiry_days": 1}
         async with self.context.bot.aiosession.post(
-            "https://dpaste.com/api/v2/", data=data
+            "https://hastebin.cc/documents", data=content.encode("utf-8")
         ) as response:
-            return response.headers["Location"]
+            if response.status == 200:
+                data = await response.json()
+                return f"https://hastebin.cc/{data['key']}"
+            else:
+                raise Exception(f"Failed to post to Hastebin: {response.status}")
 
     async def send_help_message(self, user: discord.User) -> None:
         """This is the main function that handles the help command.
