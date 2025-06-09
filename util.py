@@ -226,3 +226,32 @@ def split_list(a, n):
     """
     k, m = divmod(len(a), n)
     return list(a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n))
+
+def baseconvert(number: str, base_from: int, base_to: int) -> str:
+    """Convert a number from one base to another.
+
+    Args:
+        number (int): The number to convert.
+        base_from (int): The base of the input number.
+        base_to (int): The base to convert the number to.
+
+    Returns:
+        str: The converted number as a string.
+    """
+    if base_from < 2 or base_to < 2:
+        raise ValueError("Base must be at least 2.")
+    
+    # Convert from base_from to decimal
+    decimal_number = int(str(number), base_from)
+    
+    # Convert from decimal to base_to
+    if decimal_number == 0:
+        return "0"
+    
+    digits = []
+    while decimal_number > 0:
+        digits.append(int(decimal_number % base_to))
+        decimal_number //= base_to
+    
+    return ''.join(str(x) for x in digits[::-1])  # Reverse the list and join as string
+
