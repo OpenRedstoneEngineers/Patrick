@@ -1,6 +1,7 @@
 import asyncio
 from asyncio import to_thread
 from io import BytesIO
+from os import getenv
 from random import choice, getrandbits, randint
 from time import perf_counter
 
@@ -9,6 +10,9 @@ from discord.ext import commands
 
 from fractal import fractal
 from util import is_staff, baseconvert
+
+import openai
+openai.api_key = getenv("OPENAI_API_KEY")
 
 
 class RandCommands(commands.Cog):
@@ -52,6 +56,30 @@ class RandCommands(commands.Cog):
         await message.edit(
             content=f"Pong!\nLatency: {latency:.2f}ms\nAPI Latency: {self.bot.latency * 1000:.2f}ms"
         )
+
+    @commands.command(help="Consult the ancient wisdom of a cranky AI-powered Iron Golem about your redstone woes.")
+    async def golem(self, ctx, *, question: str):
+        if len(question) > 256:
+            return await ctx.send("Question is too long. Maximum length is 256 characters.")
+        if len(question) < 1:
+            return await ctx.send("Question is too short.")
+        
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a cranky AI-powered Iron Golem who is an expert in redstone. You answer questions about redstone with sarcasm and wit.",
+                    },
+                    {"role": "user", "content": question},
+                ],
+            )
+            answer = response.choices[0].message.content
+            return await ctx.send(answer)
+
+        except Exception as e:
+            return await ctx.send("An error occurred while processing your request. Likely fan forgot to pay his bill.")
 
     @commands.command(help="Gets a random quote from zenquotes.")
     async def quote(self, ctx):
