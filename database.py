@@ -50,6 +50,14 @@ class Connector:
                                         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                                     )"""
             )
+            await cursor.execute(
+                """CREATE TABLE IF NOT EXISTS reminders (
+                                        user_id INTEGER,
+                                        channel_id INTEGER,
+                                        message TEXT,
+                                        timestamp DATETIME
+                                        )"""
+            )
             await self.connection.commit()
 
     async def populate_cache(self):
@@ -205,6 +213,44 @@ class Connector:
         async with self.connection.cursor() as cur:
             query = "SELECT name, timestamp FROM timers WHERE user_id = ?"
             await cur.execute(query, (user_id,))
+            rows = await cur.fetchall()
+            await self.connection.commit()
+            return rows
+
+    async def add_reminder(self, user_id, channel_id, message, timestamp):
+        """Add a reminder for a user. The reminder is stored in the database with the user's ID, message, and timestamp.
+
+        Args:
+            user_id (int): The ID of the user who set the reminder
+            channel_id (int): The ID of the channel where the reminder should be sent
+            message (str): The message for the reminder
+            timestamp (datetime): The time when the reminder should be triggered
+        """
+        async with self.connection.cursor() as cur:
+            query = "INSERT INTO reminders(user_id, channel_id, message, timestamp) VALUES(?, ?, ?, ?)"
+            await cur.execute(query, (user_id, channel_id, message, timestamp))
+            await self.connection.commit()
+
+    async def get_reminders(self, user_id):
+        """Get all reminders for a user. The reminders are returned as a list of tuples with the message and timestamp of each reminder.
+
+        Args:
+            user_id (int): The ID of the user to get reminders for
+
+        Returns:
+            list: A list of tuples with the message, channel and timestamp of each reminder
+        """
+        async with self.connection.cursor() as cur:
+            query = "SELECT message, channel_id, timestamp FROM reminders WHERE user_id = ?"
+            await cur.execute(query, (user_id,))
+            rows = await cur.fetchall()
+            return rows
+
+    async def pop_expired_reminders(self):
+        """Remove all expired reminders from the database. A reminder is considered expired if its timestamp is in the past."""
+        async with self.connection.cursor() as cur:
+            query = "DELETE FROM reminders WHERE timestamp < ? RETURNING user_id, channel_id, message"
+            await cur.execute(query, (datetime.now(timezone.utc),))
             rows = await cur.fetchall()
             await self.connection.commit()
             return rows
