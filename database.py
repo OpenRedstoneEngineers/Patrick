@@ -58,6 +58,13 @@ class Connector:
                                         timestamp DATETIME
                                         )"""
             )
+            await cursor.execute(
+                """CREATE TABLE IF NOT EXISTS tempbans (
+                                        user_id INTEGER,
+                                        reason TEXT,
+                                        timestamp DATETIME
+                                    )"""
+            )
             await self.connection.commit()
 
     async def populate_cache(self):
@@ -250,6 +257,28 @@ class Connector:
         """Remove all expired reminders from the database. A reminder is considered expired if its timestamp is in the past."""
         async with self.connection.cursor() as cur:
             query = "DELETE FROM reminders WHERE timestamp < ? RETURNING user_id, channel_id, message"
+            await cur.execute(query, (datetime.now(timezone.utc),))
+            rows = await cur.fetchall()
+            await self.connection.commit()
+            return rows
+        
+    async def add_tempban(self, user_id, reason, timestamp):
+        """Add a temporary ban for a user. The ban is stored in the database with the user's ID, reason, and expiration time.
+
+        Args:
+            user_id (int): The ID of the user to ban
+            reason (str): The reason for the ban
+            timestamp (datetime): The time when the ban expires
+        """
+        async with self.connection.cursor() as cur:
+            query = "INSERT INTO tempbans(user_id, reason, timestamp) VALUES(?, ?, ?)"
+            await cur.execute(query, (user_id, reason, timestamp))
+            await self.connection.commit()
+
+    async def pop_expired_tempbans(self):
+        """Remove all expired temporary bans from the database. A ban is considered expired if its timestamp is in the past."""
+        async with self.connection.cursor() as cur:
+            query = "DELETE FROM tempbans WHERE timestamp < ? RETURNING user_id"
             await cur.execute(query, (datetime.now(timezone.utc),))
             rows = await cur.fetchall()
             await self.connection.commit()
