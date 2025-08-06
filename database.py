@@ -261,6 +261,22 @@ class Connector:
             rows = await cur.fetchall()
             await self.connection.commit()
             return rows
+
+    async def pop_reminder(self, timestamp):
+        """Remove all reminders with the given timestamp from the database, returning the messages for displaying.
+
+        Args:
+            timestamp (UserFriendlyTime): The time we use to filter by
+
+        Returns:
+            list: A list of messages of each reminder we deleted.
+        """
+        async with self.connection.cursor() as cur:
+            query = "DELETE FROM reminders WHERE timestamp = ? RETURNING message"
+            await cur.execute(query, (timestamp,))
+            rows = await cur.fetchall()
+            await self.connection.commit()
+            return rows
         
     async def add_tempban(self, user_id, reason, timestamp):
         """Add a temporary ban for a user. The ban is stored in the database with the user's ID, reason, and expiration time.
