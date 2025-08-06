@@ -267,11 +267,13 @@ class Connector:
 
         Args:
             timestamp (UserFriendlyTime): The time we use to filter by
-        """
+        """ # Optionally returns int
         async with self.connection.cursor() as cur:
             query = "DELETE FROM reminders WHERE user_id = ? AND timestamp = ? RETURNING message"
             await cur.execute(query, (user_id, timestamp))
+            # length = await len(await cur.fetchall())
             await self.connection.commit()
+            # return lenght
 
     async def add_tempban(self, user_id, reason, timestamp):
         """Add a temporary ban for a user. The ban is stored in the database with the user's ID, reason, and expiration time.
