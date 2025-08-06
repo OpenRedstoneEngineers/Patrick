@@ -53,5 +53,16 @@ class Reminders(commands.Cog):
                 # If the bot cannot send messages to the channel, skip it
                 continue
 
+    @is_discord_member()
+    @commands.command(name='delete_reminder', aliased=['delreminder'])
+    async def delete_reminder(self, ctx, *, timestamp: UserFriendlyTime) -> None:
+        """Delete all reminders of the user with the given timestamp."""
+        reminders = await self.bot.database.get_reminders(ctx.author.id)
+        if not reminders:
+            return await ctx.reply(f"{ctx.author.display_name}: You have no reminders to delete.")
+
+        await self.bot.database.pop_reminder(ctx.author.id, timestamp)    
+        await ctx.reply(f"{ctx.author.mention}: Reminder(s) deleted successfully.") # We could reply something like "@...: 4 Reminders deleted successfully."
+
 async def setup(bot):
     await bot.add_cog(Reminders(bot))
