@@ -55,7 +55,7 @@ class Connector:
                                         user_id INTEGER,
                                         channel_id INTEGER,
                                         message TEXT,
-                                        timestamp DATETIME
+                                        timestamp DATETIME,
                                         key TEXT
                                         )"""
             )
@@ -263,11 +263,11 @@ class Connector:
             await self.connection.commit()
             return rows
 
-    async def pop_reminder(self, *, user_id, key: str) -> None:
-        """Remove all reminders (from the user) with the given key from the database.
+    async def delete_reminder(self, *, user_id, key: str) -> None:
+        """Remove reminder from the user, filtered by key, from the database.
 
         Args:
-            user_id (int): Theid of the user wanting to delete a reminder
+            user_id (int): The id of the user wanting to delete a reminder
             key (str): The key we use to filter out the reminder
         """
         async with self.connection.cursor() as cur:
