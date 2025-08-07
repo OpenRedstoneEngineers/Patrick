@@ -7,9 +7,6 @@ from string import ascii_lowercase, ascii_uppercase
 from util import is_discord_member
 from timeutil import UserFriendlyTime
 
-
-KEY_LEN: int = 6
-
 class Reminders(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -25,7 +22,7 @@ class Reminders(commands.Cog):
             channel_id=ctx.channel.id,
             message=message,
             timestamp=time.dt
-            key=''.join(choice(ascii_lowercase + ascii_uppercase, k=KEY_LEN))
+            key=''.join(choice(ascii_lowercase + ascii_uppercase, k=ctx.bot.config["reminder_key_length"]))
         )
         await ctx.reply(f"{ctx.author.mention}: I will remind you at {time.dt.strftime('%Y-%m-%d %H:%M:%S')} UTC with the message: {message}")
 
@@ -63,9 +60,6 @@ class Reminders(commands.Cog):
     @commands.command(name='delete_reminder', aliased=['delreminder'])
     async def delete_reminder(self, ctx, *, key: str) -> None:
         """Delete all reminders of the user with the given key."""
-        if len(key) != KEY_LEN:
-            return await ctx.reply(f"{ctx.author.display_name}: Key does not meet criteria, expected {KEY_LEN} long.")
-
         for char in key:
             if not char in ascii_lowercase + ascii_uppercase:
                 return await ctx.reply(f"{ctx.author.display_name}: Key contains non alphabetical characters.")
@@ -73,9 +67,12 @@ class Reminders(commands.Cog):
         reminders = await self.bot.database.get_reminders(ctx.author.id)
         if not reminders:
             return await ctx.reply(f"{ctx.author.display_name}: You have no reminders to delete.")
+
+        if not any(reminder[3] == key for reminder in reminders):
+            return await ctx.reply(f"{ctx.author.display_name}: {key} not valid for any of your reminders.")
         
-        await self.bot.database.pop_reminder(user_id=ctx.author.id, key=key)    
-        await ctx.reply(f"{ctx.author.mention}: Reminder( deleted successfully.")
+        await self.bot.database.pop_reminder(user_id=ctx.author.id, key=key)
+        await ctx.reply(f"{ctx.author.mention}: Reminder deleted successfully.")
 
 async def setup(bot):
     await bot.add_cog(Reminders(bot))
