@@ -71,7 +71,7 @@ class Reminders(commands.Cog):
         if not any(reminder[3] == key for reminder in reminders):
             return await ctx.reply(f"{ctx.author.display_name}: {key} not valid for any of your reminders.")
         
-        await self.bot.database.pop_reminder(user_id=ctx.author.id, key=key)
+        await self.bot.database.delete_reminder(user_id=ctx.author.id, key=key)
         await ctx.reply(f"{ctx.author.mention}: Reminder deleted successfully.")
 
 async def setup(bot):
