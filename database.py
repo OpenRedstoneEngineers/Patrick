@@ -56,6 +56,7 @@ class Connector:
                                         channel_id INTEGER,
                                         message TEXT,
                                         timestamp DATETIME
+                                        key TEXT
                                         )"""
             )
             await cursor.execute(
@@ -224,7 +225,7 @@ class Connector:
             await self.connection.commit()
             return rows
 
-    async def add_reminder(self, user_id, channel_id, message, timestamp):
+    async def add_reminder(self, *, user_id, channel_id, message, timestamp, key: str):
         """Add a reminder for a user. The reminder is stored in the database with the user's ID, message, and timestamp.
 
         Args:
@@ -234,11 +235,11 @@ class Connector:
             timestamp (datetime): The time when the reminder should be triggered
         """
         async with self.connection.cursor() as cur:
-            query = "INSERT INTO reminders(user_id, channel_id, message, timestamp) VALUES(?, ?, ?, ?)"
-            await cur.execute(query, (user_id, channel_id, message, timestamp))
+            query = "INSERT INTO reminders(user_id, channel_id, message, timestamp, key) VALUES(?, ?, ?, ?, \)"
+            await cur.execute(query, (user_id, channel_id, message, timestamp, key))
             await self.connection.commit()
 
-    async def get_reminders(self, user_id):
+    async def get_reminders(self, user_id) -> list[tuple[str, str, str, str]]: # I suppose the DB just returns strings and not Python objects
         """Get all reminders for a user. The reminders are returned as a list of tuples with the message and timestamp of each reminder.
 
         Args:
@@ -248,7 +249,7 @@ class Connector:
             list: A list of tuples with the message, channel and timestamp of each reminder
         """
         async with self.connection.cursor() as cur:
-            query = "SELECT message, channel_id, timestamp FROM reminders WHERE user_id = ?"
+            query = "SELECT message, channel_id, timestamp, key FROM reminders WHERE user_id = ?"
             await cur.execute(query, (user_id,))
             rows = await cur.fetchall()
             return rows
@@ -262,18 +263,17 @@ class Connector:
             await self.connection.commit()
             return rows
 
-    async def pop_reminder(self, user_id, timestamp):
-        """Remove all reminders with the given timestamp from the database, returning the messages for displaying.
+    async def pop_reminder(self, *, user_id, key: str) -> None:
+        """Remove all reminders (from the user) with the given key from the database.
 
         Args:
-            timestamp (UserFriendlyTime): The time we use to filter by
-        """ # Optionally returns int
+            user_id (int): Theid of the user wanting to delete a reminder
+            key (str): The key we use to filter out the reminder
+        """
         async with self.connection.cursor() as cur:
-            query = "DELETE FROM reminders WHERE user_id = ? AND timestamp = ? RETURNING message"
-            await cur.execute(query, (user_id, timestamp))
-            # length = await len(await cur.fetchall())
+            query = "DELETE FROM reminders WHERE user_id = ? AND key = ? RETURNING message"
+            await cur.execute(query, (user_id, key))
             await self.connection.commit()
-            # return lenght
 
     async def add_tempban(self, user_id, reason, timestamp):
         """Add a temporary ban for a user. The ban is stored in the database with the user's ID, reason, and expiration time.
