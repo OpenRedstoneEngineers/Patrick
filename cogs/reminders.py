@@ -25,7 +25,7 @@ class Reminders(commands.Cog):
             channel_id=ctx.channel.id,
             message=message,
             timestamp=time.dt
-            key=''.join(choice(ascii_lowercase + ascii_uppercase, KEY_LEN))
+            key=''.join(choice(ascii_lowercase + ascii_uppercase, k=KEY_LEN))
         )
         await ctx.reply(f"{ctx.author.mention}: I will remind you at {time.dt.strftime('%Y-%m-%d %H:%M:%S')} UTC with the message: {message}")
 
