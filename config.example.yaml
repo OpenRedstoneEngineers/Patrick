@@ -8,6 +8,7 @@ autosub_forums:
   - 1026904572293287936
   - 1022293381705125968
 ingame_regex: '^`[A-Za-z]+` \*\*([A-Za-z0-9_\\]+)\*\*: *(.*)$'
+reminder_key_length: 6
 notifications:
   - name: "🇸urvival"
     description: "Survival updates"
