@@ -9,6 +9,7 @@ import discord
 from discord.ext import commands
 
 from fractal import fractal
+from brainfuck import process_brainfuck
 from util import is_staff, baseconvert, reply
 
 
@@ -281,6 +282,21 @@ class RandCommands(commands.Cog):
             target = ctx.author.display_name
         message = choice(self.bot.config["insults"])
         await reply(ctx, message.format(user=target))
+
+    @commands.command(help="Process brainfuck code.")
+    async def brainfuck(self, ctx, code: str, input: str = ""):
+        if len(code) > 1000:
+            return await reply(ctx, "Code is too long. Maximum length is 1000 characters.")
+        if len(input) > 1000:
+            return await reply(ctx, "Input is too long. Maximum length is 1000 characters.")
+        try:
+            output = await asyncio.wait_for(
+                asyncio.to_thread(process_brainfuck, code, input),
+                timeout=5.0
+            )
+        except asyncio.TimeoutError:
+            return await reply(ctx, "Processing took too long, terminating.")
+        await reply(ctx, output)
 
 async def setup(bot):
     await bot.add_cog(RandCommands(bot))
