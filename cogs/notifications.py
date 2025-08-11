@@ -26,7 +26,7 @@ class RoleButton(discord.ui.Button):
 
 class NotificationsView(discord.ui.View):
     def __init__(self, bot, categories):
-        super().__init__()
+        super().__init__(timeout=None)
         self.bot = bot
 
         for category in categories:
