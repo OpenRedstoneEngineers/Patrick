@@ -28,7 +28,7 @@ class NotificationsView(discord.ui.View):
     def __init__(self, bot, categories):
         super().__init__(timeout=None)
         self.bot = bot
-
+        print(self.bot.guilds) # del this line (but keep empty)
         for category in categories:
             role = self.bot.guilds[0].get_role(category["role"])
             self.add_item(RoleButton(role))

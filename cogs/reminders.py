@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
+from random import choice
+from string import ascii_lowercase, ascii_uppercase
 
 from util import is_discord_member
 from timeutil import UserFriendlyTime
@@ -19,7 +21,8 @@ class Reminders(commands.Cog):
             user_id=ctx.author.id,
             channel_id=ctx.channel.id,
             message=message,
-            timestamp=time.dt
+            timestamp=time.dt,
+            key=''.join(choice(ascii_lowercase + ascii_uppercase, k=ctx.bot.config["reminder_key_length"]))
         )
         await ctx.reply(f"{ctx.author.mention}: I will remind you at {time.dt.strftime('%Y-%m-%d %H:%M:%S')} UTC with the message: {message}")
 
@@ -32,9 +35,9 @@ class Reminders(commands.Cog):
             return await ctx.reply(f"{ctx.author.display_name}: You have no reminders set.")
         elif len(reminders) < 25:
             embed = discord.Embed(title=f"{ctx.author.display_name}'s Reminders", color=discord.Color.blue())
-            for message, _, timestamp in reminders:
+            for message, _, timestamp, key in reminders:
                 embed.add_field(
-                    name=f"Reminder at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
+                    name=f"Reminder at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}; key={key}",
                     value=f"Message: {message}",
                     inline=False
                 )
@@ -52,6 +55,24 @@ class Reminders(commands.Cog):
             except discord.Forbidden:
                 # If the bot cannot send messages to the channel, skip it
                 continue
+
+    @is_discord_member()
+    @commands.command(name='delete_reminder', aliased=['delreminder'])
+    async def delete_reminder(self, ctx, *, key: str) -> None:
+        """Delete all reminders of the user with the given key."""
+        for char in key:
+            if not char in ascii_lowercase + ascii_uppercase:
+                return await ctx.reply(f"{ctx.author.display_name}: Key contains non alphabetical characters.")
+
+        reminders = await self.bot.database.get_reminders(ctx.author.id)
+        if not reminders:
+            return await ctx.reply(f"{ctx.author.display_name}: You have no reminders to delete.")
+
+        if not any(reminder[3] == key for reminder in reminders):
+            return await ctx.reply(f"{ctx.author.display_name}: {key} not valid for any of your reminders.")
+
+        await self.bot.database.delete_reminder(user_id=ctx.author.id, key=key)
+        await ctx.reply(f"{ctx.author.mention}: Reminder deleted successfully.")
 
 async def setup(bot):
     await bot.add_cog(Reminders(bot))
