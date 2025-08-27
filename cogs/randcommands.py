@@ -283,7 +283,7 @@ class RandCommands(commands.Cog):
         message = choice(self.bot.config["insults"])
         await reply(ctx, message.format(user=target))
 
-    @commands.command(help="Process brainfuck code.")
+    @commands.command(help="Process brainfuck code.", aliases=["bf"])
     async def brainfuck(self, ctx, code: str, input: str = ""):
         if len(code) > 1000:
             return await reply(ctx, "Code is too long. Maximum length is 1000 characters.")
