@@ -14,7 +14,10 @@ def process_brainfuck(code: str, input: str):
     while memory.counter < len(code):
         match code[memory.counter]:
             case ">":
-                memory.pointer += 1
+                if memory.pointer < 30000:
+                    memory.pointer += 1
+                else:
+                    return f"error: pointer moved above 30000 at charcter {memory.counter}"
             case "<":
                 if memory.pointer > 0:
                     memory.pointer -= 1
@@ -28,7 +31,8 @@ def process_brainfuck(code: str, input: str):
                 memory.output += chr(memory.cells[memory.pointer])
             case ",":
                 if memory.input_index < len(memory.input):
-                    memory.cells[memory.pointer] = ord(memory.input[memory.input_index])
+                    char = ord(memory.input[memory.input_index])
+                    memory.cells[memory.pointer] = char if char < 256 else 255
                     memory.input_index += 1
                 else:
                     return f"error: input exhausted at character {memory.counter}"
