@@ -21,9 +21,9 @@ def process_brainfuck(code: str, input: str):
                 else:
                     return f"error: pointer moved below 0 at character {memory.counter}"
             case "+":
-                memory.cells[memory.pointer] += 1
+                memory.cells[memory.pointer] = (memory.cells[memory.pointer] + 1) % 256
             case "-":
-                memory.cells[memory.pointer] -= 1
+                memory.cells[memory.pointer] = (memory.cells[memory.pointer] - 1) % 256
             case ".":
                 memory.output += chr(memory.cells[memory.pointer])
             case ",":
