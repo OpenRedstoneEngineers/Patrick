@@ -5,5 +5,5 @@ config.yaml
 commands.db
 Pipfile.lock
 Pipfile
-*.log.*
+*.log
 __pycache__/

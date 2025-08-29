@@ -8,6 +8,7 @@ import yaml
 from aiohttp import ClientSession
 from discord.ext import commands
 from dotenv import load_dotenv
+from copy import copy
 
 import database
 from logger import StreamLogFormatter, setup_logger
@@ -242,7 +243,7 @@ class Patrick(commands.Bot):
                 )
             # relay chat message need to be reformatted to be processed as a command
             if message.channel.id == self.config["channels"]["gamechat"]:
-                message = reformat_relay_chat(self, message)
+                message = copy(reformat_relay_chat(self, message))
                 if message is None:
                     return
 

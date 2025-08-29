@@ -10,13 +10,6 @@ class COREmands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_thread_create(self, thread: discord.Thread):
-        if thread.parent_id in self.bot.config["autosub_forums"]:
-            role = await thread.guild.fetch_role(self.bot.config["roles"]["staff"])
-            for member in role.members:
-                await thread.add_user(member)
-
     @commands.command(
         help="Shows instructions how to apply for student, builder, or engineer."
     )
@@ -48,11 +41,41 @@ class COREmands(commands.Cog):
             await member.add_roles(role)
             await reply(ctx, f"{member.display_name} is now Trusted.")
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member):
-        greeting = choice(self.bot.config["greetings"])
-        channel = member.guild.get_channel(self.bot.config["channels"]["welcome"])
-        await channel.send(greeting.format(user=member.mention))
+    class DeleteModal(discord.ui.Modal, title="Reason for deleting"):
+        reason = discord.ui.TextInput(
+            label="Reason",
+            placeholder="Why are you deleting this message?",
+            style=discord.TextStyle.long,
+            required=True,
+        )
+
+        def __init__(self, message: discord.Message, bot):
+            super().__init__()
+            self.original_message = message
+            self.bot = bot
+
+        async def on_submit(self, interaction: discord.Interaction):
+            reason = str(self.reason).strip()
+            if reason == "":
+                reason = "No reason provided"
+            await interaction.response.send_message(
+                f'Message deleted by {interaction.user.mention}: "{reason}"'
+            )
+            channel = interaction.guild.get_channel(self.bot.config["channels"]["audit_log"])
+            embed, attachments = await create_deletion_embed(
+                interaction.user,
+                reason,
+                self.original_message,
+            )
+            await channel.send(embed=embed, files=attachments)
+            await self.original_message.delete()
+
+    @app_is_staff()
+    async def delete_message(
+        self, interaction: discord.Interaction, message: discord.Message
+    ):
+        await interaction.response.send_modal(self.DeleteModal(message, self.bot))
+
 
 async def setup(bot):
     await bot.add_cog(COREmands(bot))

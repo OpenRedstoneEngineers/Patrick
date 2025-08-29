@@ -34,7 +34,7 @@ def return_or_truncate(text, max_length):
     return text[: max_length - 3] + "..."
 
 
-def reformat_relay_chat(bot, message) -> discord.Message:
+def reformat_relay_chat(bot, message) -> typing.Optional[discord.Message]:
     """Takes a discord message and checks if it's a server relay message.
     If it is, it reformats the message to be processed as a command by the bot.
     It also changes the author of the message to a RelayMember object.
@@ -52,6 +52,7 @@ def reformat_relay_chat(bot, message) -> discord.Message:
     if match:
         author_name, content = match.groups()
         message.author.__class__ = RelayMember
+        message.author.relay = True
         message.author.nick = author_name
         message.content = content
         return message
