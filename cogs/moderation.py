@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 import typing
 
-from util import is_staff, app_is_staff, create_deletion_embed
+from util import is_staff, app_is_staff, create_deletion_embed, reformat_relay_chat
 from timeutil import UserFriendlyTime
 
 class Moderation(commands.Cog):
@@ -63,10 +63,13 @@ class Moderation(commands.Cog):
                 f'Message deleted by {interaction.user.mention}: "{reason}"'
             )
             channel = interaction.guild.get_channel(self.bot.config["channels"]["audit_log"])
+            message = self.original_message
+            if message.author.bot and message.channel.id == self.bot.config["channels"]["gamechat"]:
+                message = reformat_relay_chat(self.bot, message)
             embed, attachments = await create_deletion_embed(
                 interaction.user,
                 reason,
-                self.original_message,
+                message,
             )
             await channel.send(embed=embed, files=attachments)
             await self.original_message.delete()

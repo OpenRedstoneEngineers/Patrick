@@ -1,6 +1,7 @@
 import re
 import typing
 from random import choice
+from copy import copy
 
 import discord
 from discord import app_commands
@@ -51,8 +52,8 @@ def reformat_relay_chat(bot, message) -> typing.Optional[discord.Message]:
     match = bot.relay_regex.match(message.content)
     if match:
         author_name, content = match.groups()
+        message.author = copy(message.author)
         message.author.__class__ = RelayMember
-        message.author.relay = True
         message.author.nick = author_name
         message.content = content
         return message

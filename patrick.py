@@ -8,13 +8,13 @@ import yaml
 from aiohttp import ClientSession
 from discord.ext import commands
 from dotenv import load_dotenv
-from copy import copy
+
 
 import database
 from logger import StreamLogFormatter, setup_logger
 from util import (find_automod_matches, is_admin, load_automod_regexes,
                   process_custom_command, reformat_relay_chat, split_list,
-                  reply, create_automod_embed)
+                  reply, create_automod_embed, RelayMember)
 
 load_dotenv(Path(__file__).parent / ".env")
 TOKEN: str = getenv("TOKEN")
@@ -140,8 +140,8 @@ class PatrickHelp(commands.HelpCommand):
             mapping (Mapping[Optional[commands.Cog], List[commands.Command]]): A dictionary provided by discord.py containing the Cogs and their commands. Cog might be None for commands not in a cog.
         """
         user = self.context.author
-        if hasattr(user, "relay") and user.relay:
-            return await user.send("I am not yet able to send DMs to minecraft.")
+        if isinstance(user, RelayMember):
+            return await self.get_destination().send("I am not yet able to send DMs to minecraft.")
         await self.send_help_message(user)
 
     async def send_command_help(self, command) -> None:
@@ -151,10 +151,8 @@ class PatrickHelp(commands.HelpCommand):
             command (commands.Command): The command the user requested help for.
         """
         user = self.context.author
-        if hasattr(user, "relay") and user.relay:
-            return await self.context.send(
-                "I am not yet able to send DMs to minecraft."
-            )
+        if isinstance(user, RelayMember):
+            return await self.get_destination().send("I am not yet able to send DMs to minecraft.")
         if len(command.signature) == 0:
             await user.send(
                 f"Usage: `{self.context.bot.command_prefix[1]}{command.name}`"
@@ -243,7 +241,7 @@ class Patrick(commands.Bot):
                 )
             # relay chat message need to be reformatted to be processed as a command
             if message.channel.id == self.config["channels"]["gamechat"]:
-                message = copy(reformat_relay_chat(self, message))
+                message = reformat_relay_chat(self, message)
                 if message is None:
                     return
 
