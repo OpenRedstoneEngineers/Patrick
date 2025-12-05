@@ -170,6 +170,8 @@ class RandCommands(commands.Cog):
     @commands.command(help="Slap someone.")
     @commands.guild_only()
     async def slap(self, ctx, user: discord.Member):
+        if user.id == 234649992357347328:
+            return await reply(ctx, "You fool! >:D")
         slap_role = discord.utils.get(ctx.guild.roles, name="Slapped")
         if slap_role is None:
             return await reply(ctx, "No slapped role :(")
@@ -179,6 +181,18 @@ class RandCommands(commands.Cog):
         await reply(ctx, f"slapped {user.mention}", False, True)
         await asyncio.sleep(3_600)  # 1 hour
         await user.remove_roles(slap_role)
+
+    @commands.command(help="Unslap someone. Staff only.")
+    @commands.guild_only()
+    @is_staff()
+    async def unslap(self, ctx, user: discord.Member):
+        slap_role = discord.utils.get(ctx.guild.roles, name="Slapped")
+        if slap_role is None:
+            return await reply(ctx, "No slapped rank :(")
+        if slap_role not in user.roles:
+            return await reply(ctx, "User is not slapped.")
+        await user.remove_roles(slap_role)
+        await reply(ctx, f"unslapped {user.mention}")
 
     @commands.command(help="pikl someone.")
     @commands.guild_only()
