@@ -192,7 +192,7 @@ class RandCommands(commands.Cog):
         if slap_role not in user.roles:
             return await reply(ctx, "User is not slapped.")
         await user.remove_roles(slap_role)
-        await reply(ctx, f"unslapped {user.mention}")
+        await reply(ctx, f"unslapped {user.mention}", is_silent=True)
 
     @commands.command(help="pikl someone.")
     @commands.guild_only()
