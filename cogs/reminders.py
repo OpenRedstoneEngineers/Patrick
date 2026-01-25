@@ -70,7 +70,7 @@ class Reminders(commands.Cog):
             user_id, channel_id, message = reminder
             channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
             try:
-                await channel.send(f"<@{user_id}>{f': {message}' if message else ''}")
+                await channel.send(f"<@{user_id}>: {message}" if message else '')
             except discord.Forbidden:
                 # If the bot cannot send messages to the channel, skip it
                 continue
