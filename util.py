@@ -285,10 +285,10 @@ async def create_deletion_embed(
     if len(message.message_snapshots) > 0:
         embed.add_field(
             name="Forwarded Message Content",
-            value=f"||{return_or_truncate(message.message_snapshots[0].content, 500)}||" or "No content",
+            value=f"||{return_or_truncate(message.message_snapshots[0].content, 500)}||" if len(message.message_snapshots[0].content) > 0 else "No content",
             inline=False,
         )
-        attachments = [await attachment.to_file() for attachment in message.message_snapshots[0].attachments]
+        attachments = [await attachment.to_file(spoiler=True) for attachment in message.message_snapshots[0].attachments]
         # On long message, provide a .txt file with full content
         if len(message.message_snapshots[0].content) > 500:
             full_content_file = discord.File(
@@ -298,8 +298,8 @@ async def create_deletion_embed(
             )
             attachments.append(full_content_file)
     else:
-        embed.add_field(name="Message Content", value=f"||{return_or_truncate(message.content, 500)}||" or "No content", inline=False)
-        attachments = [await attachment.to_file() for attachment in message.attachments]
+        embed.add_field(name="Message Content", value=f"||{return_or_truncate(message.content, 500)}||" if len(message.content) > 0 else "No content", inline=False)
+        attachments = [await attachment.to_file(spoiler=True) for attachment in message.attachments]
         # On long message, provide a .txt file with full content
         if len(message.content) > 500:
             full_content_file = discord.File(
