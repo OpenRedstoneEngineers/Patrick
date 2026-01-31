@@ -188,7 +188,7 @@ class RandCommands(commands.Cog):
     async def unslap(self, ctx, user: discord.Member):
         slap_role = discord.utils.get(ctx.guild.roles, name="Slapped")
         if slap_role is None:
-            return await reply(ctx, "No slapped rank :(")
+            return await reply(ctx, "No slapped role :(")
         if slap_role not in user.roles:
             return await reply(ctx, "User is not slapped.")
         await user.remove_roles(slap_role)
@@ -206,7 +206,7 @@ class RandCommands(commands.Cog):
         await asyncio.sleep(120)
         await user.remove_roles(pikl_role)
 
-    @commands.command(help="Googles something.", aliases=["lmgtfy"])
+    @commands.command(help="Googles something.", aliases=["lmgtfy", "search"])
     async def google(self, ctx, *, query):
         await reply(ctx, f"<https://www.google.com/search?q={query.replace(' ', '+')}>")
 
