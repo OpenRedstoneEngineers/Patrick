@@ -144,6 +144,20 @@ class RandCommands(commands.Cog):
             to_return = "\n".join(to_return)
             await reply(ctx, to_return)
 
+    @commands.command(help="Generate Zaglo text.", aliases=["cursed"])
+    async def zaglo(self, ctx, *, text: str):
+        def zalgo_(text_, severity):
+            marks = list(map(chr, range(768, 879)))
+            words = text_.split()
+            return ' '.join(
+                ''.join(
+                    c + ''.join(choice(marks) for _ in range((i // 2 + 1) * severity)) if c.isalnum() else c
+                    for c in word
+                )
+                for i, word in enumerate(words)
+            )
+        await reply(ctx, zalgo_(text, choice(range(1,20))))
+
     @commands.command(help="Get someone's minecraft UUID.")
     async def uuid(self, ctx, username: str):
         async with self.bot.aiosession.get(
