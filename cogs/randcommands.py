@@ -144,8 +144,8 @@ class RandCommands(commands.Cog):
             to_return = "\n".join(to_return)
             await reply(ctx, to_return)
 
-    @commands.command(help="Generate Zaglo text.", aliases=["cursed"])
-    async def zaglo(self, ctx, *, text: str):
+    @commands.command(help="Generate Zalgo text.", aliases=["cursed"])
+    async def zalgo(self, ctx, *, text: str):
         def zalgo_(text_, severity):
             marks = list(map(chr, range(768, 879)))
             words = text_.split()
