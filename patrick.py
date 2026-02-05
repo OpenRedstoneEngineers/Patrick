@@ -225,7 +225,7 @@ class Patrick(commands.Bot):
         if message.author.bot:
             if ":" not in message.content:
                 return
-            part = message.content.split(":")[1]
+            part = message.content[message.content.index(":") + 1:]
             matches = find_automod_matches(self, part)
             if matches:
                 logger.info(
