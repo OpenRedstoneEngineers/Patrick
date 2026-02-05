@@ -223,7 +223,10 @@ class Patrick(commands.Bot):
             await message.delete()
             return
         if message.author.bot:
-            matches = find_automod_matches(self, message)
+            if ":" not in message.content:
+                return
+            part = message.content.split(":")[1]
+            matches = find_automod_matches(self, part)
             if matches:
                 logger.info(
                     f"Automod triggered for user {message.author.display_name} with message {message.content}"

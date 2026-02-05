@@ -97,17 +97,17 @@ def load_automod_regexes(bot):
     bot.automod_regexes = [re.compile(regex, flags=re.IGNORECASE) for regex in bot.config["automod_regexes"]]
 
 
-def find_automod_matches(bot, message: discord.Message) -> list[str]:
+def find_automod_matches(bot, message: str) -> list[str]:
     """Checks a message against the automod regexes to see if it matches any of them.
 
     Args:
         bot (commands.Bot): The bot instance.
-        message (discord.Message): A discord message to check.
+        message (str): An ingame message to check.
 
     Returns:
         list[str]: List of any matching regexes
     """
-    return [regex.pattern for regex in bot.automod_regexes if regex.search(message.content)]
+    return [regex.pattern for regex in bot.automod_regexes if regex.search(message)]
 
 
 def is_staff():
