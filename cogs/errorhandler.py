@@ -47,6 +47,8 @@ class ErrorHandler(commands.Cog):
             await respond("This command is disabled.")
         elif isinstance(error, commands.PrivateMessageOnly):
             await respond("This command can only be used in DMs.")
+        elif isinstance(error, commands.NoPrivateMessage):
+            await respond("This command cannot be used in DMs.")
         elif isinstance(error, NoRelayException):
             await respond("This command does not work in the relay chat :'(")
         else:
