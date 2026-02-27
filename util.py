@@ -2,6 +2,7 @@ import re
 import typing
 from random import choice
 from copy import copy
+from io import StringIO
 
 import discord
 from discord import app_commands
@@ -284,13 +285,29 @@ async def create_deletion_embed(
     if len(message.message_snapshots) > 0:
         embed.add_field(
             name="Forwarded Message Content",
-            value=f"||{message.message_snapshots[0].content}||" or "No content",
+            value=f"||{return_or_truncate(message.message_snapshots[0].content, 500)}||" if len(message.message_snapshots[0].content) > 0 else "No content",
             inline=False,
         )
-        attachments = [await attachment.to_file() for attachment in message.message_snapshots[0].attachments]
+        attachments = [await attachment.to_file(spoiler=True) for attachment in message.message_snapshots[0].attachments]
+        # On long message, provide a .txt file with full content
+        if len(message.message_snapshots[0].content) > 500:
+            full_content_file = discord.File(
+                fp=StringIO(message.message_snapshots[0].content),
+                filename=f"message_{message.id}_full_content.txt",
+                spoiler=True,
+            )
+            attachments.append(full_content_file)
     else:
-        embed.add_field(name="Message Content", value=f"||{message.content}||" or "No content", inline=False)
-        attachments = [await attachment.to_file() for attachment in message.attachments]
+        embed.add_field(name="Message Content", value=f"||{return_or_truncate(message.content, 500)}||" if len(message.content) > 0 else "No content", inline=False)
+        attachments = [await attachment.to_file(spoiler=True) for attachment in message.attachments]
+        # On long message, provide a .txt file with full content
+        if len(message.content) > 500:
+            full_content_file = discord.File(
+                fp=StringIO(message.content),
+                filename=f"message_{message.id}_full_content.txt",
+                spoiler=True,
+            )
+            attachments.append(full_content_file)
     embed.add_field(name="Channel", value=message.channel.jump_url, inline=True)
     embed.add_field(name="Context", value=message.jump_url, inline=True)
     embed.set_footer(text=f"Message ID: {message.id}")
