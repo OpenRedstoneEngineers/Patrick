@@ -376,10 +376,13 @@ class RandCommands(commands.Cog):
         result = ""
         i = 0
         while i < len(text):
-            if text[i:i + 3] == "ORE" or text[i:i + 3] == "ore":
+            if text[i:i + 3].lower() == "ore":
                 result += text[i:i + 3]
                 i += 3
-            elif text[i] in ("O", "o"):
+            elif text[i:i + 2].lower() == "er" and (i + 2 == len(text) or not text[i + 2].isalpha()):
+                result += "ORE"
+                i += 2
+            elif text[i].lower() == "o" and not (i + 1 < len(text) and text[i + 1].lower() == "o"):
                 result += "ORE"
                 i += 1
             else:
