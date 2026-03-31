@@ -371,5 +371,21 @@ class RandCommands(commands.Cog):
         )
         await reply(ctx, mocked)
 
+    @commands.command(help="OREify sOREm Text.")
+    async def oreify(self, ctx, *, text: str):
+        result = ""
+        i = 0
+        while i < len(text):
+            if text[i:i + 3] == "ORE" or text[i:i + 3] == "ore":
+                result += text[i:i + 3]
+                i += 3
+            elif text[i] in ("O", "o"):
+                result += "ORE"
+                i += 1
+            else:
+                result += text[i]
+                i += 1
+        await reply(ctx, result)
+
 async def setup(bot):
     await bot.add_cog(RandCommands(bot))
