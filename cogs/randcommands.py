@@ -375,21 +375,8 @@ class RandCommands(commands.Cog):
 
     @commands.command(help="OREify sOREm Text.")
     async def oreify(self, ctx, *, text: str):
-        result = ""
-        i = 0
-        while i < len(text):
-            if text[i:i + 3].lower() == "ore":
-                result += text[i:i + 3]
-                i += 3
-            elif text[i:i + 2].lower() == "er" and (i + 2 == len(text) or not text[i + 2].isalpha()):
-                result += "ORE"
-                i += 2
-            elif text[i].lower() == "o" and not (i + 1 < len(text) and text[i + 1].lower() == "o"):
-                result += "ORE"
-                i += 1
-            else:
-                result += text[i]
-                i += 1
+        pattern = r'ore|er(?![a-zA-Z])|or|our|ure|ar|ur|(?<!o)o(?!o)'
+        result = re.sub(pattern, lambda m: m.group() if m.group().lower() == 'ore' else 'ORE', text, flags=re.IGNORECASE)
         await reply(ctx, result)
 
 async def setup(bot):
