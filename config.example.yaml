@@ -25,6 +25,7 @@ notifications:
     description: "Get notified by Staff for trials"
     role: 1295904929378074725
 roles:
+  unslappable: 463778326696165377
   trusted: 962782039403298887
   staff: 617848463438118922
   admin: 117711708847472645
