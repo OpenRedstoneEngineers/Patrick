@@ -4,6 +4,7 @@ from asyncio import to_thread
 from io import BytesIO
 from random import choice, getrandbits, randint
 from time import perf_counter
+import re
 
 import discord
 from discord.ext import commands
