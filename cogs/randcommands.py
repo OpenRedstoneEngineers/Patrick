@@ -4,6 +4,7 @@ from asyncio import to_thread
 from io import BytesIO
 from random import choice, getrandbits, randint
 from time import perf_counter
+from urllib.parse import quote_plus
 import re
 
 import discord
@@ -225,7 +226,7 @@ class RandCommands(commands.Cog):
 
     @commands.command(help="Googles something.", aliases=["lmgtfy", "search"])
     async def google(self, ctx, *, query):
-        await reply(ctx, f"<https://www.google.com/search?q={query.replace(' ', '+')}>")
+        await reply(ctx, f"<https://www.google.com/search?q={quote_plus(query)}>")
 
     def prime_factors(self, n: int) -> list:
         i = 2
