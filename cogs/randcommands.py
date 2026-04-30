@@ -21,12 +21,13 @@ class RandCommands(commands.Cog):
 
     async def cog_load(self):
         bases = {
-        "b": 2,
-        "o": 8,
-        "d": 10,
-        "h": 16,
-        "64": 64,
-    }
+            "b": 2,
+            "o": 8,
+            "d": 10,
+            "h": 16,
+            "64": 64,
+        }
+
         async def convert_func(ctx, number: str):
             from_base = ctx.command.extras["from_base"]
             to_base = ctx.command.extras["to_base"]
@@ -223,9 +224,17 @@ class RandCommands(commands.Cog):
         await asyncio.sleep(120)
         await user.remove_roles(pikl_role)
 
-    @commands.command(help="Googles something.", aliases=["lmgtfy", "search"])
+    @commands.command(help="Googles something.", aliases=["lmgtfy", "search"]) # maybe replace with just ddg soon?
     async def google(self, ctx, *, query):
         await reply(ctx, f"<https://www.google.com/search?q={query.replace(' ', '+')}>")
+
+    @commands.command(help="Searches something on DuckDuckGo.", aliases=["ddg"])
+    async def duckduckgo(self, ctx, *, query):
+        await reply(ctx, f"<https://duckduckgo.com/?q={query.replace(' ', '+')}>")
+
+    @commands.command(help="Searches something on Wikipedia.", aliases=["wp"])
+    async def wikipedia(self, ctx, *, query):
+        await reply(ctx, f"<https://en.wikipedia.org/wiki/Special%3ASearch/{query.replace(' ', '_')}>")
 
     def prime_factors(self, n: int) -> list:
         i = 2
@@ -343,6 +352,7 @@ class RandCommands(commands.Cog):
         await reply(ctx, message.format(user=target))
 
     @commands.command(help="Process brainfuck code.", aliases=["bf"])
+    @commands.cooldown(1, 10, commands.BucketType.default) # HEAVY spam potential (ever seen .+[.+])
     async def brainfuck(self, ctx, code: str, input: str = ""):
         if len(code) > 1000:
             return await reply(ctx, "Code is too long. Maximum length is 1000 characters.")
