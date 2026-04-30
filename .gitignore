@@ -1,5 +1,6 @@
 venv/
 .idea/
+.vscode/
 .env
 config.yaml
 commands.db
