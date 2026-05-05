@@ -385,7 +385,7 @@ class RandCommands(commands.Cog):
     @commands.command(help="A p p l y  t h e  p i p p o c u r s e  t o  s o m e  t e x t.")
     async def pippocurse(self, ctx, *, text: str):
         result = text.replace(". ", "." + " " * random.randint(0, 4))
-        if random.randint(0, 1):
+        if random.randint(0, 5) == 0:
             result = " ".join(list(result))
         await reply(ctx, result)
 
