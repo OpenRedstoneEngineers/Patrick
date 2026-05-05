@@ -1,12 +1,13 @@
 import asyncio
+import discord
 import random
+import re
+
 from asyncio import to_thread
 from io import BytesIO
 from random import choice, getrandbits, randint
 from time import perf_counter
-import re
 
-import discord
 from discord.ext import commands
 
 from fractal import fractal
@@ -21,12 +22,13 @@ class RandCommands(commands.Cog):
 
     async def cog_load(self):
         bases = {
-        "b": 2,
-        "o": 8,
-        "d": 10,
-        "h": 16,
-        "64": 64,
-    }
+            "b": 2,
+            "o": 8,
+            "d": 10,
+            "h": 16,
+            "64": 64,
+        }
+
         async def convert_func(ctx, number: str):
             from_base = ctx.command.extras["from_base"]
             to_base = ctx.command.extras["to_base"]
@@ -378,6 +380,13 @@ class RandCommands(commands.Cog):
     async def oreify(self, ctx, *, text: str):
         pattern = r'ore|er(?![a-zA-Z])|or|our|ure|ar|ur|(?<!o)o(?!o)'
         result = re.sub(pattern, lambda m: m.group() if m.group().lower() == 'ore' else 'ORE', text, flags=re.IGNORECASE)
+        await reply(ctx, result)
+
+    @commands.command(help="A p p l y  t h e  p i p p o c u r s e  t o  s o m e  t e x t.")
+    async def pippocurse(self, ctx, *, text: str):
+        result = text.replace(". ", "." + " " * random.randint(0, 4))
+        if random.randint(0, 1):
+            result = " ".join(list(result))
         await reply(ctx, result)
 
 async def setup(bot):
