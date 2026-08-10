@@ -381,5 +381,13 @@ class RandCommands(commands.Cog):
         result = re.sub(pattern, lambda m: m.group() if m.group().lower() == 'ore' else 'ORE', text, flags=re.IGNORECASE)
         await reply(ctx, result)
 
+    @commands.command(help="Countdown from 5 seconds in chat")
+    @commands.cooldown(2, 60, commands.BucketType.channel)
+    async def countdown(self, ctx):
+        for i in range(5, 0, -1):
+            await reply(ctx, f"Starting in {i}...")
+            await asyncio.sleep(1)
+        await reply(ctx, "Go!")
+
 async def setup(bot):
     await bot.add_cog(RandCommands(bot))
