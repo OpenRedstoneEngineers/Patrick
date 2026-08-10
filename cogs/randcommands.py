@@ -7,6 +7,8 @@ from asyncio import to_thread
 from io import BytesIO
 from random import choice, getrandbits, randint
 from time import perf_counter
+from urllib.parse import quote_plus
+import re
 
 from discord.ext import commands
 
@@ -227,7 +229,7 @@ class RandCommands(commands.Cog):
 
     @commands.command(help="Googles something.", aliases=["lmgtfy", "search"])
     async def google(self, ctx, *, query):
-        await reply(ctx, f"<https://www.google.com/search?q={query.replace(' ', '+')}>")
+        await reply(ctx, f"<https://www.google.com/search?q={quote_plus(query)}>")
 
     def prime_factors(self, n: int) -> list:
         i = 2
@@ -390,6 +392,14 @@ class RandCommands(commands.Cog):
         if random.randint(0, 5) == 0:
             result = " ".join(list(result))
         await reply(ctx, result)
+
+    @commands.command(help="Countdown from 5 seconds in chat")
+    @commands.cooldown(2, 60, commands.BucketType.channel)
+    async def countdown(self, ctx):
+        for i in range(5, 0, -1):
+            await reply(ctx, f"Starting in {i}...")
+            await asyncio.sleep(1)
+        await reply(ctx, "Go!")
 
 async def setup(bot):
     await bot.add_cog(RandCommands(bot))
