@@ -384,7 +384,7 @@ class RandCommands(commands.Cog):
         result = re.sub(pattern, lambda m: m.group() if m.group().lower() == 'ore' else 'ORE', text, flags=re.IGNORECASE)
         await reply(ctx, result)
 
-    @commands.command(help="A p p l y  t h e  p i p p o c u r s e  t o  s o m e  t e x t.")
+    @commands.command(help="A p p l y  t h e  p i p p o c u r s e  t o  s o m e  t e x t .")
     async def pippocurse(self, ctx, *, text: str):
         if random.randint(0, 1) == 0:
             text = text.replace(" ", " " * random.randint(2, 4))
