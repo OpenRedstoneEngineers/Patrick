@@ -79,7 +79,10 @@ class Reminders(commands.Cog):
     async def check_reminders_error(self, error):
         """Handle errors in the check_reminders task."""
         self.bot.logger.error(f"Error in check_reminders task: {error}")
-        self.check_reminders.cancel()  # Stop the task to prevent further errors
+        try:
+            self.check_reminders.cancel()  # Stop the task to prevent further errors
+        except Exception as e:
+            self.bot.logger.error(f"Failed to cancel check_reminders task: {e}")
         self.check_reminders.start()  # Restart the task
 
 async def setup(bot):
