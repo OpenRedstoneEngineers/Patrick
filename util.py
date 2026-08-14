@@ -255,6 +255,23 @@ def baseconvert(number: str, base_from: int, base_to: int) -> str:
     if not all(char in characters for char in number):
         raise BaseConversionError(f"All characters of the given input must be in the range 0-9, A-Z and a-z or + and /. Underscores can be used to seperate parts of the number.")
 
+    # Check for invalid cases with _ within the number.
+    was_underscore: bool = False
+    for idx, char in enumerate(number):
+        if char == "_":
+            if idx == 0:
+                raise BaseConversionError(f"Number cannot start with underscore.")
+            if idx == len(number) - 1:
+                raise BaseConversionError(f"Number cannot end with underscore.")
+            if was_underscore:
+                raise BaseConversionError(f"Cannot use multiple consecutive underscores in a number.")
+            was_underscore = True
+        else:
+            was_underscore = False
+
+    # Remove all (valid) positions where _ is used.
+    number = number.replace("_", "")
+
     # Convert from base_from to decimal
     # int can take base >= 2 and <= 36 (or 0)
     if base_from > 36:
