@@ -10,7 +10,13 @@ from discord.ext import commands
 
 
 class NoRelayException(Exception):
-    pass
+    ...
+
+
+class BaseConversionError(ValueError):
+    """
+    Error to be used to forward custom exceptions from within :func:`baseconvert`.
+    """
 
 
 class RelayMember(discord.Member):
@@ -242,9 +248,12 @@ def baseconvert(number: str, base_from: int, base_to: int) -> str:
 
     characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"
     if base_from > len(characters) or base_to > len(characters):
-        raise ValueError(f"Base must be between 2 and {len(characters)}.")
+        raise BaseConversionError(f"Base must be between 2 and {len(characters)}.")
     if base_from < 2 or base_to < 2:
-        raise ValueError("Base must be at least 2.")
+        raise BaseConversionError("Base must be at least 2.")
+
+    if not all(char in characters for char in number):
+        raise BaseConversionError(f"All characters of the given input must be in the range 0-9, A-Z and a-z or + and /. Underscores can be used to seperate parts of the number.")
 
     # Convert from base_from to decimal
     # int can take base >= 2 and <= 36 (or 0)
@@ -269,7 +278,8 @@ def baseconvert(number: str, base_from: int, base_to: int) -> str:
         digits.append(characters[int(decimal_number % base_to)])
         decimal_number //= base_to
 
-    return ''.join(str(x) for x in digits[::-1])  # Reverse the list and join as string
+    return ''.join(str(digit) for digit in digits[::-1])  # Reverse the list and join as string
+
 
 
 async def create_deletion_embed(
