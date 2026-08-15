@@ -70,10 +70,20 @@ class Reminders(commands.Cog):
             user_id, channel_id, message = reminder
             channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
             try:
-                await channel.send(f"<@{user_id}>: {message}" if message else '')
+                await channel.send(f"<@{user_id}>: {message}" if message else f"<@{user_id}>: You asked me to remind you!")
             except discord.Forbidden:
                 # If the bot cannot send messages to the channel, skip it
                 continue
+
+    @check_reminders.error
+    async def check_reminders_error(self, error):
+        """Handle errors in the check_reminders task."""
+        self.bot.logger.error(f"Error in check_reminders task: {error}")
+        try:
+            self.check_reminders.cancel()  # Stop the task to prevent further errors
+        except Exception as e:
+            self.bot.logger.error(f"Failed to cancel check_reminders task: {e}")
+        self.check_reminders.start()  # Restart the task
 
 async def setup(bot):
     await bot.add_cog(Reminders(bot))
