@@ -20,21 +20,21 @@ def create_brace_map(code: str):
             stack.append(ptr)
         elif code[ptr] == "]":
             if not stack:
-                raise SyntaxError("Unmatched ']'")
+                raise SyntaxError(f"error: unmatched ']' at character {ptr}")
             opening_brace = stack.pop()
             brace_map[opening_brace] = ptr
             brace_map[ptr] = opening_brace
         ptr += 1
     if stack:
-        raise SyntaxError(stack.pop())
+        raise SyntaxError(f"error: unmatched '[' at character {stack.pop()}")
     return brace_map
 
 def process_brainfuck(code: str, input: str):
     memory = Memory(input)
     try:
         memory.brace_map = create_brace_map(code)
-    except SyntaxError as e:
-        return f"error: unmatched '[' at character {e.args[0]}"
+    except SyntaxError as err:
+        return err.args[0]
     memory.counter = 0
     while memory.counter < len(code):
         match code[memory.counter]:
