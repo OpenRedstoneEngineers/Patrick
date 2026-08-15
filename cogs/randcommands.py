@@ -15,7 +15,7 @@ from discord.ext import commands
 from fractal import fractal
 from spirograph import spirograph
 from brainfuck import process_brainfuck
-from util import is_staff, baseconvert, reply
+from util import is_staff, BaseConversionError, baseconvert, reply
 
 
 class RandCommands(commands.Cog):
@@ -37,6 +37,11 @@ class RandCommands(commands.Cog):
             try:
                 converted = baseconvert(number, bases[from_base], bases[to_base])
                 await reply(ctx, converted)
+
+            # Re-raise the exception if it was thrown by us,
+            # otherwise keep the generic text.
+            except BaseConversionError as err:
+                raise err from None
             except ValueError as e:
                 await reply(ctx, f"Invalid input number for base {from_base}")
 

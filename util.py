@@ -10,7 +10,13 @@ from discord.ext import commands
 
 
 class NoRelayException(Exception):
-    pass
+    ...
+
+
+class BaseConversionError(ValueError):
+    """
+    Error to be used to forward custom exceptions from within :func:`baseconvert`.
+    """
 
 
 class RelayMember(discord.Member):
@@ -31,6 +37,7 @@ def return_or_truncate(text, max_length):
     Returns:
         str: The original string if it's shorter than max_length, otherwise the truncated string with ellipsis.
     """
+
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
@@ -50,6 +57,7 @@ def reformat_relay_chat(bot, message) -> typing.Optional[discord.Message]:
     Returns:
         discord.Message: The reformatted message if it is a relay message, otherwise None.
     """
+
     match = bot.relay_regex.match(message.content)
     if match:
         author_name, content = match.groups()
@@ -72,6 +80,7 @@ async def process_custom_command(bot, message) -> bool:
     Returns:
         bool: True if the command was found and processed, False otherwise.
     """
+
     commands = bot.database.commands_cache
     for prefix in bot.command_prefix:
         if message.content.removeprefix(prefix) in commands:
@@ -95,6 +104,7 @@ def load_automod_regexes(bot):
     Args:
         bot (commands.Bot): The bot instance.
     """
+
     bot.automod_regexes = [re.compile(regex, flags=re.IGNORECASE) for regex in bot.config["automod_regexes"]]
 
 
@@ -108,6 +118,7 @@ def find_automod_matches(bot, message: str) -> list[str]:
     Returns:
         list[str]: List of any matching regexes
     """
+
     return [regex.pattern for regex in bot.automod_regexes if regex.search(message)]
 
 
@@ -224,8 +235,10 @@ def split_list(a, n):
     Returns:
         list[list]: A list of n lists with the elements of the original list
     """
+
     k, m = divmod(len(a), n)
     return list(a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n))
+
 
 def baseconvert(number: str, base_from: int, base_to: int) -> str:
     """Convert a number from one base to another.
@@ -238,25 +251,58 @@ def baseconvert(number: str, base_from: int, base_to: int) -> str:
     Returns:
         str: The converted number as a string.
     """
+
     characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"
     if base_from > len(characters) or base_to > len(characters):
-        raise ValueError(f"Base must be between 2 and {len(characters)}.")
+        raise BaseConversionError(f"Base must be between 2 and {len(characters)}.")
     if base_from < 2 or base_to < 2:
-        raise ValueError("Base must be at least 2.")
-    
+        raise BaseConversionError("Base must be at least 2.")
+
+    if not all(char in characters for char in number):
+        raise BaseConversionError(f"All characters of the given input must be in the range 0-9, A-Z and a-z or + and /. Underscores can be used to seperate parts of the number.")
+
+    # Check for invalid cases with _ within the number.
+    was_underscore: bool = False
+    for idx, char in enumerate(number):
+        if char == "_":
+            if idx == 0:
+                raise BaseConversionError(f"Number cannot start with underscore.")
+            if idx == len(number) - 1:
+                raise BaseConversionError(f"Number cannot end with underscore.")
+            if was_underscore:
+                raise BaseConversionError(f"Cannot use multiple consecutive underscores in a number.")
+            was_underscore = True
+        else:
+            was_underscore = False
+
+    # Remove all (valid) positions where _ is used.
+    number = number.replace("_", "")
+
     # Convert from base_from to decimal
-    decimal_number = int(str(number), base_from)
-    
+    # int can take base >= 2 and <= 36 (or 0)
+    if base_from > 36:
+        decimal_number = 0
+        for index, char in enumerate(number[::-1]):
+            decimal_number += characters.index(char) * base_from ** index
+
+    else:
+        decimal_number = int(str(number), base_from)
+
     # Convert from decimal to base_to
     if decimal_number == 0:
         return "0"
-    
+
+    # Shortcut for decimal. The number is already in base 10.
+    if base_to == 10:
+        return str(decimal_number)
+
     digits = []
     while decimal_number > 0:
         digits.append(characters[int(decimal_number % base_to)])
         decimal_number //= base_to
-    
-    return ''.join(str(x) for x in digits[::-1])  # Reverse the list and join as string
+
+    return ''.join(str(digit) for digit in digits[::-1])  # Reverse the list and join as string
+
 
 async def create_deletion_embed(
         staff: typing.Union[discord.Member, discord.User],
@@ -273,6 +319,7 @@ async def create_deletion_embed(
     Returns:
         discord.Embed: An embed containing the deletion information.
     """
+
     embed = discord.Embed(
         title="ORE Moderation Services",
         color=discord.Color.red(),
@@ -314,6 +361,7 @@ async def create_deletion_embed(
     embed.timestamp = discord.utils.utcnow()
     return embed, attachments
 
+
 async def create_automod_embed(
         message: str,
         matches: list[str]
@@ -327,10 +375,12 @@ async def create_automod_embed(
     Returns:
         discord.Embed: An embed containing the deletion information.
     """
+
     embed = discord.Embed(description=message, color=discord.Color.red())
     for match in matches:
         embed.add_field(name="Matches", value=f"`{match}`", inline=False)
     return embed
+
 
 def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
     """Get all commands registered in the bot.
@@ -341,6 +391,7 @@ def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
     Returns:
         typing.List[str]: A list of all commands.
     """
+
     command_names = []
     for command in bot.commands:
         if isinstance(command, commands.Group):
@@ -351,6 +402,7 @@ def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
         if command.aliases:
             command_names.extend([alias for alias in command.aliases])
     return command_names
+
 
 async def reply(ctx, message=None, is_reply=False, is_silent=False, **kwargs):
     if message is None:
