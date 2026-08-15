@@ -37,6 +37,7 @@ def return_or_truncate(text, max_length):
     Returns:
         str: The original string if it's shorter than max_length, otherwise the truncated string with ellipsis.
     """
+
     if len(text) <= max_length:
         return text
     return text[: max_length - 3] + "..."
@@ -56,6 +57,7 @@ def reformat_relay_chat(bot, message) -> typing.Optional[discord.Message]:
     Returns:
         discord.Message: The reformatted message if it is a relay message, otherwise None.
     """
+
     match = bot.relay_regex.match(message.content)
     if match:
         author_name, content = match.groups()
@@ -78,6 +80,7 @@ async def process_custom_command(bot, message) -> bool:
     Returns:
         bool: True if the command was found and processed, False otherwise.
     """
+
     commands = bot.database.commands_cache
     for prefix in bot.command_prefix:
         if message.content.removeprefix(prefix) in commands:
@@ -101,6 +104,7 @@ def load_automod_regexes(bot):
     Args:
         bot (commands.Bot): The bot instance.
     """
+
     bot.automod_regexes = [re.compile(regex, flags=re.IGNORECASE) for regex in bot.config["automod_regexes"]]
 
 
@@ -114,6 +118,7 @@ def find_automod_matches(bot, message: str) -> list[str]:
     Returns:
         list[str]: List of any matching regexes
     """
+
     return [regex.pattern for regex in bot.automod_regexes if regex.search(message)]
 
 
@@ -230,6 +235,7 @@ def split_list(a, n):
     Returns:
         list[list]: A list of n lists with the elements of the original list
     """
+
     k, m = divmod(len(a), n)
     return list(a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] for i in range(n))
 
@@ -298,7 +304,6 @@ def baseconvert(number: str, base_from: int, base_to: int) -> str:
     return ''.join(str(digit) for digit in digits[::-1])  # Reverse the list and join as string
 
 
-
 async def create_deletion_embed(
         staff: typing.Union[discord.Member, discord.User],
         reason: str,
@@ -314,6 +319,7 @@ async def create_deletion_embed(
     Returns:
         discord.Embed: An embed containing the deletion information.
     """
+
     embed = discord.Embed(
         title="ORE Moderation Services",
         color=discord.Color.red(),
@@ -355,6 +361,7 @@ async def create_deletion_embed(
     embed.timestamp = discord.utils.utcnow()
     return embed, attachments
 
+
 async def create_automod_embed(
         message: str,
         matches: list[str]
@@ -368,10 +375,12 @@ async def create_automod_embed(
     Returns:
         discord.Embed: An embed containing the deletion information.
     """
+
     embed = discord.Embed(description=message, color=discord.Color.red())
     for match in matches:
         embed.add_field(name="Matches", value=f"`{match}`", inline=False)
     return embed
+
 
 def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
     """Get all commands registered in the bot.
@@ -382,6 +391,7 @@ def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
     Returns:
         typing.List[str]: A list of all commands.
     """
+
     command_names = []
     for command in bot.commands:
         if isinstance(command, commands.Group):
@@ -392,6 +402,7 @@ def get_all_command_names(bot: commands.Bot) -> typing.List[str]:
         if command.aliases:
             command_names.extend([alias for alias in command.aliases])
     return command_names
+
 
 async def reply(ctx, message=None, is_reply=False, is_silent=False, **kwargs):
     if message is None:
