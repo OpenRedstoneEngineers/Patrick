@@ -43,7 +43,7 @@ class Reminders(commands.Cog):
             return await ctx.reply(f"{escape_nickname(ctx.author.display_name)}: You have no reminders set.")
 
         if len(reminders) > 5:
-            embeds = [discord.Embed(title=f"{ctx.author.display_name}'s Reminders", color=discord.Color.blue()) for _ in range((len(reminders) - 1) // 5 + 1)]
+            embeds = [discord.Embed(title=f"{escape_nickname(ctx.author.display_name)}'s Reminders", color=discord.Color.blue()) for _ in range((len(reminders) - 1) // 5 + 1)]
             for i, reminder in enumerate(reminders):
                 embeds[i // 5].add_field(
                     name=f"Reminder at {reminder[2].strftime('%Y-%m-%d %H:%M:%S')}",
@@ -53,7 +53,7 @@ class Reminders(commands.Cog):
             paginator = EmbedPaginatorSession(ctx, *embeds)
             await paginator.run()
         else:
-            embed = discord.Embed(title=f"{ctx.author.display_name}'s Reminders", color=discord.Color.blue())
+            embed = discord.Embed(title=f"{escape_nickname(ctx.author.display_name)}'s Reminders", color=discord.Color.blue())
             for message, _, timestamp in reminders:
                     embed.add_field(
                         name=f"Reminder at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
