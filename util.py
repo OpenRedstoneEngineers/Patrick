@@ -26,6 +26,26 @@ class RelayMember(discord.Member):
     """
 
 
+def escape_nickname(name: str) -> str:
+    """
+    Escape all characters in a discord nickname so they don't convert to markdown.
+    """
+
+    name = name.replace("\\", "\\\\")   # Need to escape \ first, so we don't undo any of our work later.
+    escapeable_characters = [
+        "*",
+        "_",
+        "`",
+        ">",
+        "~",
+        "|",
+    ]
+    for char in escapeable_characters:
+        name = name.replace(char, rf"\{char}")
+
+    return name
+
+
 def return_or_truncate(text, max_length):
     """Takes a string and truncates it to a maximum length, adding ellipsis if truncated.
     If the string is shorter than the maximum length, it returns the original string.
