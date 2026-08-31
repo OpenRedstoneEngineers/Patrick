@@ -105,12 +105,14 @@ async def process_custom_command(bot, message) -> bool:
     for prefix in bot.command_prefix:
         if message.content.removeprefix(prefix) in commands:
             bot.logger.info(
-                f"User '{message.author.display_name}' ran custom command '{message.content[1:]}'"
+                f"User '{escape_nickname(message.author.display_name)}' ran custom command '{message.content[1:]}'"
             )
             await message.channel.send(
-                f"{message.author.display_name}: {choice(commands[message.content.removeprefix(prefix)])}"
+                f"{escape_nickname(message.author.display_name)}: {choice(commands[message.content.removeprefix(prefix)])}"
             )
             await bot.database.add_command_history(
+                # No need to escape name here, this is not sent immediately. Also, it might
+                # cause problems with the current state of the DB.
                 message.author.display_name, message.content.removeprefix(prefix)
             )
             return True
@@ -428,4 +430,4 @@ async def reply(ctx, message=None, is_reply=False, is_silent=False, **kwargs):
     if message is None:
         message = ""
     target = ctx.reply if is_reply else ctx.send
-    return await target(f"{ctx.author.display_name}: {message}", silent=is_silent, **kwargs)
+    return await target(f"{escape_nickname(ctx.author.display_name)}: {message}", silent=is_silent, **kwargs)

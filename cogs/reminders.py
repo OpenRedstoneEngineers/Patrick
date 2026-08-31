@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 
-from util import is_discord_member
+from util import is_discord_member, escape_nickname
 from timeutil import UserFriendlyTime
 from paginator import EmbedPaginatorSession
 
@@ -40,7 +40,7 @@ class Reminders(commands.Cog):
         """List all reminders set by the user."""
         reminders = await self.bot.database.get_reminders(ctx.author.id)
         if not reminders:
-            return await ctx.reply(f"{ctx.author.display_name}: You have no reminders set.")
+            return await ctx.reply(f"{escape_nickname(ctx.author.display_name)}: You have no reminders set.")
 
         if len(reminders) > 5:
             embeds = [discord.Embed(title=f"{ctx.author.display_name}'s Reminders", color=discord.Color.blue()) for _ in range((len(reminders) - 1) // 5 + 1)]

@@ -2,7 +2,7 @@ from random import choice
 import discord
 from discord.ext import commands
 
-from util import app_is_staff, is_staff, create_deletion_embed, reply
+from util import app_is_staff, is_staff, create_deletion_embed, reply, escape_nickname
 
 
 class COREmands(commands.Cog):
@@ -35,10 +35,10 @@ class COREmands(commands.Cog):
         role = ctx.guild.get_role(self.bot.config["roles"]["trusted"])
         if role in member.roles:
             await member.remove_roles(role)
-            await reply(ctx, f"{member.display_name} is no longer Trusted.")
+            await reply(ctx, f"{escape_nickname(member.display_name)} is no longer Trusted.")
         else:
             await member.add_roles(role)
-            await reply(ctx, f"{member.display_name} is now Trusted.")
+            await reply(ctx, f"{escape_nickname(member.display_name)} is now Trusted.")
 
 async def setup(bot):
     await bot.add_cog(COREmands(bot))

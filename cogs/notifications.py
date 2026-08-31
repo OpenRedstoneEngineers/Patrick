@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from util import escape_nickname
+
 
 class RoleButton(discord.ui.Button):
     def __init__(self, role):
@@ -13,13 +15,13 @@ class RoleButton(discord.ui.Button):
         if self.role in interaction.user.roles:
             await interaction.user.remove_roles(self.role)
             await interaction.response.send_message(
-                f"{interaction.user.display_name}, you are no longer subscribed to {self.role.name} notifications.",
+                f"{escape_nickname(interaction.user.display_name)}, you are no longer subscribed to {self.role.name} notifications.",
                 ephemeral=True,
             )
         else:
             await interaction.user.add_roles(self.role)
             await interaction.response.send_message(
-                f"{interaction.user.display_name}, you are now subscribed to {self.role.name} notifications.",
+                f"{escape_nickname(interaction.user.display_name)}, you are now subscribed to {self.role.name} notifications.",
                 ephemeral=True,
             )
 
