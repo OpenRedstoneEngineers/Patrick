@@ -39,6 +39,11 @@ def escape_nickname(name: str) -> str:
         ">",
         "~",
         "|",
+        # Part of links.
+        "[",
+        "]",
+        "(",
+        ")",
     ]
     for char in escapeable_characters:
         name = name.replace(char, rf"\{char}")
