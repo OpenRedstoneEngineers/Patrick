@@ -9,7 +9,7 @@ from discord import app_commands
 from discord.ext import commands
 
 
-DISCORD_NICKNAME_ESCAPE_RE = re.compile(r'([\\*_`>~|\[\]()])')
+DISCORD_NICKNAME_ESCAPE_RE = re.compile(r'([\\*#-_`>~|\[\]()])')
 
 
 class NoRelayException(Exception):
