@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 import typing
 
-from util import is_staff, app_is_staff, create_deletion_embed, reformat_relay_chat
+from util import is_staff, app_is_staff, create_deletion_embed, reformat_relay_chat, escape_nickname
 from timeutil import UserFriendlyTime
 
 class Moderation(commands.Cog):
@@ -97,7 +97,7 @@ class Moderation(commands.Cog):
         embed.set_thumbnail(url="https://i.imgflip.com/44o9ir.png")
         embed.add_field(name="Staff Member", value=ctx.author.mention, inline=False)
         embed.add_field(name="User", value=user.mention, inline=True)
-        embed.add_field(name="Display Name", value=user.display_name, inline=True)
+        embed.add_field(name="Display Name", value=escape_nickname(user.display_name), inline=True)
         embed.add_field(name="Reason", value=reason if reason else "No reason provided", inline=False)
         embed.timestamp = ctx.message.created_at
 

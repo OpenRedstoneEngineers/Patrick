@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-from util import is_discord_member, reply
+from util import is_discord_member, reply, escape_nickname
 
 
 def pretty_timedelta(delta):
@@ -61,7 +61,7 @@ class Timers(commands.Cog):
             if member == ctx.author:
                 await reply(ctx, f"Your timers:\n{timers}")
             else:
-                await reply(ctx, f"{member.display_name}'s timers:\n{timers}")
+                await reply(ctx, f"{escape_nickname(member.display_name)}'s timers:\n{timers}")
         else:
             await reply(ctx, "No timers found.")
 

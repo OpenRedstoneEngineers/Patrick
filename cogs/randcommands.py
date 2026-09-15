@@ -15,7 +15,7 @@ from discord.ext import commands
 from fractal import fractal
 from spirograph import spirograph
 from brainfuck import process_brainfuck
-from util import is_staff, BaseConversionError, baseconvert, reply
+from util import is_staff, BaseConversionError, baseconvert, reply, escape_nickname
 
 
 class RandCommands(commands.Cog):
@@ -42,7 +42,7 @@ class RandCommands(commands.Cog):
             # otherwise keep the generic text.
             except BaseConversionError as err:
                 raise err from None
-            except ValueError as e:
+            except ValueError:
                 await reply(ctx, f"Invalid input number for base {from_base}")
 
         for from_base, from_value in bases.items():
@@ -63,7 +63,8 @@ class RandCommands(commands.Cog):
         message = await reply(ctx, "Testing...")
         latency = (perf_counter() - start) * 1000
         await message.edit(
-            content=f"{ctx.author.display_name}: Pong!\nLatency: {latency:.2f}ms\n"
+            content=f"{escape_nickname(ctx.author.display_name)}: Pong!\n"
+                    f"Latency: {latency:.2f}ms\n"
                     f"API Latency: {self.bot.latency * 1000:.2f}ms"
         )
 
@@ -347,7 +348,7 @@ class RandCommands(commands.Cog):
     @commands.command(help="Be mean to someone. >:D")
     async def insult(self, ctx, target: str = None):
         if target is None:
-            target = ctx.author.display_name
+            target = escape_nickname(ctx.author.display_name)
         message = choice(self.bot.config["insults"])
         await reply(ctx, message.format(user=target))
 

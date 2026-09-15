@@ -9,6 +9,9 @@ from discord import app_commands
 from discord.ext import commands
 
 
+DISCORD_NICKNAME_ESCAPE_RE = re.compile(r'([\\*#-_`>~|\[\]()])')
+
+
 class NoRelayException(Exception):
     ...
 
@@ -24,6 +27,23 @@ class RelayMember(discord.Member):
     """A subclass of discord.Member to signify that the member is a relay member.
     The class holds no functionality, but is used to signify that the member is a relay member for permission checks.
     """
+
+
+def user_log_repr(user: discord.User | discord.Member) -> str:
+    """
+    Create a formatted string using the un-escaped nickname as well as the user
+    id, so log messages are the same as in chattore.
+    """
+
+    return f"{user.display_name} ({user.id})"
+
+
+def escape_nickname(name: str) -> str:
+    """
+    Escape all characters in a discord nickname so they don't convert to markdown.
+    """
+
+    return DISCORD_NICKNAME_ESCAPE_RE.sub(r"\\\1", name)
 
 
 def return_or_truncate(text, max_length):
@@ -85,12 +105,14 @@ async def process_custom_command(bot, message) -> bool:
     for prefix in bot.command_prefix:
         if message.content.removeprefix(prefix) in commands:
             bot.logger.info(
-                f"User '{message.author.display_name}' ran custom command '{message.content[1:]}'"
+                f"User {user_log_repr(message.author)} ran custom command '{message.content[1:]}'"
             )
             await message.channel.send(
-                f"{message.author.display_name}: {choice(commands[message.content.removeprefix(prefix)])}"
+                f"{escape_nickname(message.author.display_name)}: {choice(commands[message.content.removeprefix(prefix)])}"
             )
             await bot.database.add_command_history(
+                # No need to escape name here, this is not sent immediately. Also, it might
+                # cause problems with the current state of the DB.
                 message.author.display_name, message.content.removeprefix(prefix)
             )
             return True
@@ -327,7 +349,7 @@ async def create_deletion_embed(
     embed.set_thumbnail(url="https://i.imgflip.com/44o9ir.png")
     embed.add_field(name="Staff Member", value=staff.mention, inline=False)
     embed.add_field(name="User", value=message.author.mention, inline=True)
-    embed.add_field(name="Display Name", value=message.author.display_name, inline=True)
+    embed.add_field(name="Display Name", value=escape_nickname(message.author.display_name), inline=True)
     embed.add_field(name="Reason", value=reason, inline=False)
     if len(message.message_snapshots) > 0:
         embed.add_field(
@@ -408,4 +430,4 @@ async def reply(ctx, message=None, is_reply=False, is_silent=False, **kwargs):
     if message is None:
         message = ""
     target = ctx.reply if is_reply else ctx.send
-    return await target(f"{ctx.author.display_name}: {message}", silent=is_silent, **kwargs)
+    return await target(f"{escape_nickname(ctx.author.display_name)}: {message}", silent=is_silent, **kwargs)
