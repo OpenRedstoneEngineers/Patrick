@@ -9,6 +9,9 @@ from discord import app_commands
 from discord.ext import commands
 
 
+DISCORD_NICKNAME_ESCAPE_RE = re.compile(r'([\\*_`>~|\[\]()])')
+
+
 class NoRelayException(Exception):
     ...
 
@@ -31,24 +34,7 @@ def escape_nickname(name: str) -> str:
     Escape all characters in a discord nickname so they don't convert to markdown.
     """
 
-    name = name.replace("\\", "\\\\")   # Need to escape \ first, so we don't undo any of our work later.
-    escapeable_characters = [
-        "*",
-        "_",
-        "`",
-        ">",
-        "~",
-        "|",
-        # Part of links.
-        "[",
-        "]",
-        "(",
-        ")",
-    ]
-    for char in escapeable_characters:
-        name = name.replace(char, rf"\{char}")
-
-    return name
+    return DISCORD_NICKNAME_ESCAPE_RE.sub(r"\\\1", name)
 
 
 def return_or_truncate(text, max_length):
