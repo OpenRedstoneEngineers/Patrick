@@ -2,7 +2,7 @@ import traceback
 
 from discord.ext import commands
 
-from util import NoRelayException, reply, escape_nickname
+from util import NoRelayException, reply, chattore_log_format
 
 
 class ErrorHandler(commands.Cog):
@@ -34,7 +34,7 @@ class ErrorHandler(commands.Cog):
             )
         elif isinstance(error, commands.CommandNotFound):
             self.bot.logger.info(
-                f"User '{escape_nickname(ctx.author.display_name)}' attempted to run an unrecognized command: '{ctx.message.content[1:]}'"
+                f"User '{chattore_log_format(ctx.author)}' attempted to run an unrecognized command: '{ctx.message.content[1:]}'"
             )
             await respond("Unrecognized command :'(")
         elif isinstance(error, commands.CommandOnCooldown):
