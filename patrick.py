@@ -15,7 +15,7 @@ from logger import StreamLogFormatter, setup_logger
 from util import (find_automod_matches, is_admin, load_automod_regexes,
                   process_custom_command, reformat_relay_chat, split_list,
                   reply, create_automod_embed, RelayMember, escape_nickname,
-                  chattore_log_format,)
+                  user_log_repr)
 
 load_dotenv(Path(__file__).parent / ".env")
 TOKEN: str = getenv("TOKEN")
@@ -230,7 +230,7 @@ class Patrick(commands.Bot):
             matches = find_automod_matches(self, part)
             if matches:
                 logger.info(
-                    f"Automod triggered for user {chattore_log_format(message.author)} with message {message.content}"
+                    f"Automod triggered for user {user_log_repr(message.author)} with message {message.content}"
                 )
                 channel = message.guild.get_channel(
                     self.config["channels"]["automod"]
@@ -270,7 +270,7 @@ class Patrick(commands.Bot):
             else:
                 # A prefix was found, but no (custom) command was found. This means the user is trying to run a command that does not exist.
                 self.logger.info(
-                    f"User {chattore_log_format(ctx.author)} attempted to run an unrecognized command: '{ctx.message.content[1:]}'"
+                    f"User {user_log_repr(ctx.author)} attempted to run an unrecognized command: '{ctx.message.content[1:]}'"
                 )
                 return await reply(ctx, "Unrecognized command :'(")
 
@@ -278,7 +278,7 @@ class Patrick(commands.Bot):
             # The context is valid when a command and prefix was found.
             # This is provided by discord.py and ensures that the context is valid for regular command processing
             self.logger.info(
-                f"User {chattore_log_format(message.author)}' ran command '{ctx.command.name}'"
+                f"User {user_log_repr(message.author)}' ran command '{ctx.command.name}'"
             )
             await self.database.add_command_history(
                 message.author.display_name, ctx.command.name

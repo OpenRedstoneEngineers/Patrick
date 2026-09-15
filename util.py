@@ -29,7 +29,7 @@ class RelayMember(discord.Member):
     """
 
 
-def chattore_log_format(user: discord.User | discord.Member) -> str:
+def user_log_repr(user: discord.User | discord.Member) -> str:
     """
     Create a formatted string using the un-escaped nickname as well as the user
     id, so log messages are the same as in chattore.
@@ -105,7 +105,7 @@ async def process_custom_command(bot, message) -> bool:
     for prefix in bot.command_prefix:
         if message.content.removeprefix(prefix) in commands:
             bot.logger.info(
-                f"User {chattore_log_format(message.author)} ran custom command '{message.content[1:]}'"
+                f"User {user_log_repr(message.author)} ran custom command '{message.content[1:]}'"
             )
             await message.channel.send(
                 f"{escape_nickname(message.author.display_name)}: {choice(commands[message.content.removeprefix(prefix)])}"
