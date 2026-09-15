@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 
-from util import is_discord_member, escape_nickname
+from util import escape_nickname, is_discord_member, return_or_truncate
 from timeutil import UserFriendlyTime
 from paginator import EmbedPaginatorSession
 
@@ -30,8 +30,9 @@ class Reminders(commands.Cog):
         )
 
         msg = f"{ctx.author.mention}: I will remind you at {time.dt.strftime('%Y-%m-%d %H:%M:%S')} UTC ({timestamp(time.dt)}) "
-        if message:
-            msg += f"with the message: {message}"
+        if message: 
+            # Picked 100 after a lot of long and very illegal testing. Sorry Eith.
+            msg += f"with the message: {return_or_truncate(message, 100)}"
         await ctx.reply(msg)
 
     @is_discord_member()
