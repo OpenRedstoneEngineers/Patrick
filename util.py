@@ -242,7 +242,7 @@ def is_discord_member():
         if not isinstance(ctx.author, RelayMember):
             return True
         else:
-            raise commands.MissingPermissions("You are not a discord member.")
+            raise NoRelayException("You are not a discord member.")
 
     return commands.check(predicate)
 
