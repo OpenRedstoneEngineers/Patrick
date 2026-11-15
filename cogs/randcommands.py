@@ -60,13 +60,12 @@ class RandCommands(commands.Cog):
     @commands.command(help="Performs a ping test and shows results.", aliases=["pingtest"])
     async def ping(self, ctx):
         start = perf_counter()
-        message = await reply(ctx, "Testing...")
+        await reply(ctx, "Testing...")
         latency = (perf_counter() - start) * 1000
-        await message.edit(
-            content=f"{escape_nickname(ctx.author.display_name)}: Pong!\n"
-                    f"Latency: {latency:.2f}ms\n"
-                    f"API Latency: {self.bot.latency * 1000:.2f}ms"
-        )
+        message = f"{escape_nickname(ctx.author.display_name)}: Pong!\n" + \
+            f"Latency: {latency:.2f}ms\n" + \
+            f"API Latency: {self.bot.latency * 1000:.2f}ms"
+        await reply(ctx, message)
 
     @commands.command(help="Gets a random quote from zenquotes.", aliases=["zenquote"])
     async def quote(self, ctx):
